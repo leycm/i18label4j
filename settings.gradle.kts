@@ -1,0 +1,45 @@
+// Gradle Plugin Mgmt
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+// replacement for property(String) that checks gradle.properties
+fun getGradleProperty(name: String): String? {
+    return try {
+        val propsFile = rootDir.resolve("gradle.properties")
+        if (!propsFile.exists()) return null
+
+        val props = java.util.Properties()
+        propsFile.inputStream().use { props.load(it) }
+
+        props.getProperty(name)
+    } catch (_: Exception) {
+        null
+    }
+}
+
+// Gradle Dependency Mgmt
+dependencyResolutionManagement {
+    println("[+] Checking gradle.properties for version-catalog...")
+    val versionCatalogProp = getGradleProperty("version-catalog")
+    if (versionCatalogProp.isNullOrEmpty() || versionCatalogProp == "gradle/libs.versions.toml")
+        return@dependencyResolutionManagement
+
+    versionCatalogs {
+        create("libs") {
+            println("[+] Loading $versionCatalogProp ...")
+            from(files("$rootDir/$versionCatalogProp"))
+        }
+    }
+}
+
+// Project Includes
+rootProject.name = getGradleProperty("artifact") ?: "null"
+
+include("api", "impl")
+
+project(":api").projectDir = file("tmpl-api")
+project(":impl").projectDir = file("tmpl-impl")

@@ -1,0 +1,31 @@
+############################################################
+# Gradle Version Catalog
+# Manage your dependencies in one central place
+############################################################
+
+[plugins]
+lombok = { id = "io.freefair.lombok", version = "8.14.2" }
+
+[libraries]
+annos-jetbrains = { group = "org.jetbrains", name = "annotations", version = "24.0.1" }
+annos-jspecify = { group = "org.jspecify", name = "jspecify", version = "1.0.0" }
+
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version = "2.2.10" }
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version = "2.2.10" }
+
+jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version = "2.17.2" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.17.2" }
+jackson-yaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.17.2" }
+jackson-toml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-toml", version = "2.17.2" }
+
+adventure-api = { group = "net.kyori", name = "adventure-api", version = "4.24.0" }
+adventure-minimessage = { group = "net.kyori", name = "adventure-text-minimessage", version = "4.24.0" }
+adventure-plain = { group = "net.kyori", name = "adventure-text-serializer-plain", version = "4.24.0" }
+adventure-legacy = { group = "net.kyori", name = "adventure-text-serializer-legacy", version = "4.24.0" }
+adventure-gson = { group = "net.kyori", name = "adventure-text-serializer-gson", version = "4.24.0" }
+
+[bundles]
+adventure = ["adventure-api", "adventure-minimessage", "adventure-plain", "adventure-legacy", "adventure-gson"]
+jackson = ["jackson-core", "jackson-databind", "jackson-yaml", "jackson-toml"]
+kotlin = ["kotlin-stdlib", "kotlin-reflect"]
+annos = ["annos-jetbrains", "annos-jspecify"]
