@@ -41,5 +41,5 @@ rootProject.name = getGradleProperty("artifact") ?: "null"
 
 include("api", "impl")
 
-project(":api").projectDir = file("tmpl-api")
-project(":impl").projectDir = file("tmpl-impl")
+project(":api").projectDir = file("i18-api")
+project(":impl").projectDir = file("i18-impl")
