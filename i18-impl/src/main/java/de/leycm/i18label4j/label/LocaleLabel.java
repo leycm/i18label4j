@@ -1,0 +1,63 @@
+package de.leycm.i18label4j.label;
+
+import de.leycm.i18label4j.Label;
+import de.leycm.i18label4j.LabelProvider;
+import de.leycm.i18label4j.mapping.Mapping;
+import lombok.NonNull;
+
+import java.util.*;
+import java.util.function.Function;
+
+public record LocaleLabel(
+        @NonNull LabelProvider provider,
+        @NonNull Set<Mapping> mappings,
+        @NonNull String key,
+        @NonNull Function<Locale, String> fallback
+) implements Label {
+
+    public LocaleLabel { }
+
+    public LocaleLabel(@NonNull LabelProvider provider, @NonNull String key,
+                       @NonNull Function<Locale, String> fallback) {
+        this(provider, new HashSet<>(), key, fallback);
+    }
+
+    @Override
+    public @NonNull Set<Mapping> mappings() {
+        return Collections.unmodifiableSet(mappings);
+    }
+
+    @Override
+    public @NonNull Label mapTo(@NonNull Mapping mapping) {
+        mappings.add(mapping);
+        return this;
+    }
+
+    @Override
+    public @NonNull String in(@NonNull Locale locale) {
+        return provider.translate(key, locale, fallback);
+    }
+
+    @Override
+    public @NonNull String toString() {
+        try {return serialize();
+        } catch (Throwable e) {
+            return Objects.toString(this);
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        LocaleLabel that = (LocaleLabel) obj;
+        return provider.equals(that.provider()) &&
+                key.equals(that.key());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(provider, key);
+    }
+
+}
