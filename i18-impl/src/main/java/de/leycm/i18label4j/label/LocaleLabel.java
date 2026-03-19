@@ -20,6 +20,7 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.*;
 import java.util.function.Function;
 
+@SuppressWarnings("ClassCanBeRecord") // cause: mutable mappings
 public class LocaleLabel implements Label {
     private final @NonNull LabelProvider provider;
     private final @NonNull Set<Mapping> mappings;
