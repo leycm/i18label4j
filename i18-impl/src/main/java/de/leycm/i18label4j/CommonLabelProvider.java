@@ -135,13 +135,14 @@ public class CommonLabelProvider implements LabelProvider {
         Map<String, LocalizedResult> localeMap = loadLocaleMap(locale);
 
         return localeMap.computeIfAbsent(key, k -> {
-            if (locale == getDefaultLocale()) return new LocalizedResult(null);
+            if (getDefaultLocale().equals(locale))
+                return new LocalizedResult(null);
             return translate(getDefaultLocale(), key);
         });
     }
 
     @ApiStatus.Internal
-    public Map<String, LocalizedResult> loadLocaleMap(final @NonNull Locale locale)
+    public @NonNull Map<String, LocalizedResult> loadLocaleMap(final @NonNull Locale locale)
             throws NullPointerException, IllegalArgumentException {
 
         AtomicReference<IllegalArgumentException> loadException = new AtomicReference<>();
@@ -224,9 +225,8 @@ public class CommonLabelProvider implements LabelProvider {
 
     @Override
     public void clearCache(final @NonNull Locale locale) {
-        translationCache
-                .remove(locale.toLanguageTag())
-                .clear();
+        Map<?, ?> localeCache = translationCache.remove(locale.toLanguageTag());
+        if (localeCache != null) {localeCache.clear();}
     }
 
     @Override
