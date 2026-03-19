@@ -13,6 +13,8 @@ package de.leycm.i18label4j.mapping;
 import lombok.Getter;
 import lombok.NonNull;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -54,59 +56,97 @@ public class MappingRule {
     /** Minecraft Legacy style: {@code §:variable} */
     public static final @NonNull MappingRule MINECRAFT_LEGACY = new MappingRule("§:", "");
 
-    private static final String ESCAPED_PREFIX = "\u0000P";
-    private static final String ESCAPED_SUFFIX = "\u0000S";
+    private static final String ESCAPED_PREFIX = "\u0001P";
+    private static final String ESCAPED_SUFFIX = "\u0001S";
+    private static final int INPUT_LIMIT = 100_000_000;
+    private static final int MAX_MATCHES = 10_000;
 
     private final String prefix;
     private final String suffix;
     private final Pattern pattern;
 
+    private final String escapedPrefixLiteral;
+    private final String escapedSuffixLiteral;
+
     public MappingRule(final @NonNull String prefix, final @NonNull String suffix) {
         this.prefix = prefix;
         this.suffix = suffix;
 
+        this.escapedPrefixLiteral = "\\" + prefix;
+        this.escapedSuffixLiteral = "\\" + suffix;
+
         if (suffix.isEmpty()) {
             this.pattern = Pattern.compile(Pattern.quote(prefix) + "([A-Za-z0-9_]+)");
         } else {
-            this.pattern = Pattern.compile(Pattern.quote(prefix)
-                    + "([^" + Pattern.quote(suffix.substring(0, 1)) + "]+)"
-                    + Pattern.quote(suffix));
+            this.pattern = Pattern.compile(Pattern.quote(prefix) +
+                    "([A-Za-z0-9_.\\-]+)" + Pattern.quote(suffix));
         }
     }
 
-    public String apply(final @NonNull String s, final @NonNull Set<Mapping> mappings) {
-        if (mappings.isEmpty()) return s;
+    @SuppressWarnings("IndexOfReplaceableByContains") // cause: we dont have to use CharSequence#toString()
+    public String apply(@NonNull String input, @NonNull Set<Mapping> mappings) {
+        if (input.length() > INPUT_LIMIT) throw new IllegalArgumentException("Input too large");
+        if (mappings.isEmpty() || input.isEmpty() ) return input;
+        if (input.indexOf(prefix) < 0) return input;
 
-        String result = s
-                .replace("\\" + prefix, ESCAPED_PREFIX)
-                .replace("\\" + suffix, ESCAPED_SUFFIX);
+        final Map<String, String> lookup;
+        int size = mappings.size();
 
-        Matcher matcher = pattern.matcher(result);
-        StringBuilder sb = new StringBuilder();
-
-        while (matcher.find()) {
-            final String key = matcher.group(1);
-
-            String replacement = null;
-
-            for (final Mapping mapping : mappings) {
-                if (!mapping.key().equals(key)) continue;
-                replacement = mapping.valueAsString();
-                break;
+        if (size == 1) {
+            Mapping m = mappings.iterator().next();
+            lookup = Map.of(m.key(), m.valueAsString());
+        } else {
+            lookup = new HashMap<>((int) (size / 0.75f) + 1);
+            for (Mapping m : mappings) {
+                lookup.put(m.key(), m.valueAsString());
             }
-
-            final String finalReplacement = Objects
-                    .requireNonNullElse(replacement, matcher.group(0));
-
-            matcher.appendReplacement(sb, finalReplacement);
         }
 
-        matcher.appendTail(sb);
-        result = sb.toString();
+        String working = input;
+        boolean hasEscape = input.indexOf('\\') >= 0;
 
-        result = result
-                .replace(ESCAPED_PREFIX, prefix)
-                .replace(ESCAPED_SUFFIX, suffix);
+        if (hasEscape) {
+            working = working
+                    .replace(escapedPrefixLiteral, ESCAPED_PREFIX)
+                    .replace(escapedSuffixLiteral, ESCAPED_SUFFIX);
+        }
+
+        Matcher matcher = pattern.matcher(working);
+
+        StringBuilder sb = null;
+
+        int lastEnd = 0;
+        int matchCount = 0;
+
+        while (matcher.find()) {
+            if (++matchCount > MAX_MATCHES) break;
+
+            String key = matcher.group(1);
+            String replacement = lookup.get(key);
+
+            if (replacement == null) continue;
+
+            if (sb == null) {
+                sb = new StringBuilder(working.length());
+            }
+
+            sb.append(working, lastEnd, matcher.start());
+            sb.append(replacement);
+
+            lastEnd = matcher.end();
+        }
+
+        if (sb == null) return input;
+
+        sb.append(working, lastEnd, working.length());
+
+        String result = sb.toString();
+
+        if (hasEscape) {
+            result = result
+                    .replace(ESCAPED_PREFIX, prefix)
+                    .replace(ESCAPED_SUFFIX, suffix);
+        }
 
         return result;
     }
