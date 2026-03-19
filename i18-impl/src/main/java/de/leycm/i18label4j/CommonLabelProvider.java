@@ -235,7 +235,6 @@ public class CommonLabelProvider implements LabelProvider {
 
     @Override
     public void clearCache() {
-        // todo: figure out if also clearing sub-maps is faster
         translationCache.clear();
     }
 
