@@ -18,6 +18,7 @@ import de.leycm.i18label4j.serialize.LabelSerializer;
 import de.leycm.i18label4j.source.LocalizationSource;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 
 import java.util.Locale;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class CommonLabelProvider implements LabelProvider {
 
@@ -73,7 +75,7 @@ public class CommonLabelProvider implements LabelProvider {
         return new Builder();
     }
 
-    private final Map<String, Map<String, String>> translationCache = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, LocalizedResult>> translationCache = new ConcurrentHashMap<>();
     private final Map<Class<?>, LabelSerializer<?>> serializerRegistry = new ConcurrentHashMap<>();
 
     private final LocalizationSource localizationSource;
@@ -87,7 +89,6 @@ public class CommonLabelProvider implements LabelProvider {
             final @NonNull Locale defaultLocale) {
         this.serializerRegistry.putAll(serializers);
         this.localizationSource = source;
-
         this.defaultMappingRule = defaultMappingRule;
         this.defaultLocale = defaultLocale;
     }
@@ -108,98 +109,73 @@ public class CommonLabelProvider implements LabelProvider {
     }
 
     @Override
-    public @NonNull Label createI18Label(@NonNull String key, @NonNull Function<Locale, String> fallback) {
+    public @NonNull Label createI18Label(
+            final @NonNull String key, final @NonNull Function<Locale, String> fallback) {
         return new LocaleLabel(this, key, fallback);
     }
 
     @Override
-    public @NonNull Label createLiteralLabel(@NonNull String literal) {
+    public @NonNull Label createLiteralLabel(final @NonNull String literal) {
         return new LiteralLabel(this, literal);
     }
 
     @Override
-    public @NonNull String translate(@NonNull String key, @NonNull Locale locale,
-                                     @NonNull Function<Locale, String> fallback) {
-
-        final AtomicReference<RuntimeException> exception = new AtomicReference<>();
-
-        final Locale defaultLocale = getDefaultLocale();
-        final String localeTag = locale.toLanguageTag();
-        final String defaultTag = defaultLocale.toLanguageTag();
-
-        Map<String, String> localeMap = translationCache.computeIfAbsent(
-                localeTag,
-                tag -> getLocalization(locale, exception)
-        );
-
-        String value = localeMap.get(key);
-        if (value != null) {
-            if (exception.get() != null) {
-                throwCachedException(localeTag, exception);
-            }
-            return value;
-        }
-
-        if (!locale.equals(defaultLocale)) {
-
-            Map<String, String> defaultMap = translationCache.computeIfAbsent(
-                    defaultTag,
-                    tag -> getLocalization(defaultLocale, exception)
-            );
-
-            String defaultValue = defaultMap.get(key);
-
-            if (defaultValue != null) {
-                localeMap.putIfAbsent(key, defaultValue);
-
-                if (exception.get() != null) {
-                    throwCachedException(localeTag, exception);
-                }
-
-                return defaultValue;
-            }
-        }
-
-        String fallbackValue = fallback.apply(locale);
-        localeMap.putIfAbsent(key, fallbackValue);
-
-        if (exception.get() != null) {
-            throwCachedException(localeTag, exception);
-        }
-
-        return fallbackValue;
+    public @NonNull String translate(final @NonNull Locale locale,
+                                     final @NonNull String key,
+                                     final @NonNull String fallback
+    ) throws NullPointerException, IllegalArgumentException {
+        return translate(locale, key).or(fallback);
     }
 
-    @Contract("_, _ -> new")
-    private @NonNull Map<String, String> getLocalization(@NonNull Locale locale,
-                                                         @NonNull AtomicReference<RuntimeException> exception)
-            throws NullPointerException {
-        try {
-            Map<String, String> translations = localizationSource.getLocalization(locale);
-            return new ConcurrentHashMap<>(translations);
-        } catch (Exception e) {
-            exception.set(new RuntimeException("Failed to load translations for locale: " + locale.toLanguageTag(), e));
-            return new ConcurrentHashMap<>();
-        }
+    @ApiStatus.Internal
+    public @NonNull LocalizedResult translate(final @NonNull Locale locale,
+                                              final @NonNull String key)
+            throws NullPointerException, IllegalArgumentException {
+
+        Map<String, LocalizedResult> localeMap = loadLocaleMap(locale);
+
+        return localeMap.computeIfAbsent(key, k -> {
+            if (getDefaultLocale().equals(locale))
+                return new LocalizedResult(null);
+            return translate(getDefaultLocale(), key);
+        });
     }
 
-    @Contract("_, _ -> fail")
-    private void throwCachedException(final @NonNull String localeTag,
-                                      final @NonNull AtomicReference<RuntimeException> exception)
-            throws NullPointerException, IllegalArgumentException  {
-        throw new IllegalArgumentException(
-                "Failed to load translations for locale \"" + localeTag
-                        + "\"; an empty map is cached due to the failure, "
-                        + "translation attempts will not re-attempt loading"
-                        + "until the cache is cleared",
-                exception.get()
-        );
+    @ApiStatus.Internal
+    public @NonNull Map<String, LocalizedResult> loadLocaleMap(final @NonNull Locale locale)
+            throws NullPointerException, IllegalArgumentException {
+
+        AtomicReference<IllegalArgumentException> loadException = new AtomicReference<>();
+
+        final Map<String, LocalizedResult> localMap = translationCache.computeIfAbsent(locale.toLanguageTag(), tag -> {
+            try {
+                return localizationSource.getLocalization(locale)
+                        .entrySet()
+                        .stream()
+                        .collect(Collectors.toConcurrentMap(Map.Entry::getKey,
+                                e -> new LocalizedResult(e.getValue())));
+
+            } catch (Exception e) {
+                loadException.set(new IllegalArgumentException(
+                                "Failed to load translations for locale \"" + locale.toLanguageTag()
+                                + "\"; an empty map is cached due to the failure, "
+                                + "translation attempts will not re-attempt loading "
+                                + "until the cache is cleared", e));
+
+                return new ConcurrentHashMap<>();
+            }
+        });
+
+        IllegalArgumentException err = loadException.get();
+        if (err != null) throw err;
+
+        return localMap;
     }
 
     @Override
     public @NonNull <T> T serialize(final @NonNull Label label,
                                     final @NonNull Class<T> type)
-            throws SerializationException, IllegalArgumentException {
+            throws SerializationException, IllegalArgumentException, NullPointerException {
         LabelSerializer<?> serializer = serializerRegistry.get(type);
 
         if (serializer == null)
@@ -210,8 +186,8 @@ public class CommonLabelProvider implements LabelProvider {
     }
 
     @Override
-    public @NonNull <T> Label deserialize(@NonNull T serialized)
-            throws DeserializationException, IllegalArgumentException  {
+    public @NonNull <T> Label deserialize(final @NonNull T serialized)
+            throws DeserializationException, IllegalArgumentException, NullPointerException {
         Class<?> type = serialized.getClass();
         LabelSerializer<T> serializer = getSafeSerializer(type);
 
@@ -222,8 +198,8 @@ public class CommonLabelProvider implements LabelProvider {
     }
 
     @Override
-    public @NonNull <T> T format(@NonNull String input, @NonNull Class<T> type)
-            throws FormatException, IllegalArgumentException  {
+    public @NonNull <T> T format(final @NonNull String input, final @NonNull Class<T> type)
+            throws FormatException, IllegalArgumentException, NullPointerException {
         LabelSerializer<?> serializer = serializerRegistry.get(type);
 
         if (serializer == null)
@@ -233,8 +209,8 @@ public class CommonLabelProvider implements LabelProvider {
         return type.cast(result);
     }
 
-    @SuppressWarnings("unchecked") // because: we try catch it
-    private <T> LabelSerializer<T> getSafeSerializer(Class<?> type) {
+    @SuppressWarnings("unchecked") // cause: we catch ClassCastException explicitly
+    private <T> LabelSerializer<T> getSafeSerializer(final @NonNull Class<?> type) {
         try {
             return (LabelSerializer<T>) serializerRegistry.get(type);
         } catch (ClassCastException e) {
@@ -248,17 +224,13 @@ public class CommonLabelProvider implements LabelProvider {
     }
 
     @Override
-    public void clearCache(@NonNull Locale locale) {
-        translationCache.computeIfPresent(locale.toLanguageTag(),
-                (tag, map) -> {
-            map.clear();
-            return map;
-        });
+    public void clearCache(final @NonNull Locale locale) {
+        Map<?, ?> localeCache = translationCache.remove(locale.toLanguageTag());
+        if (localeCache != null) {localeCache.clear();}
     }
 
     @Override
-    public void clearCache(@NonNull Locale @NonNull ... locale) {
+    public void clearCache(final @NonNull Locale @NonNull ... locale) {
         for (Locale loc : locale) clearCache(loc);
     }
-
 }

@@ -47,20 +47,16 @@ public interface LabelProvider extends Instanceable {
     default void warmUp(final @NonNull Locale @NonNull ... localizations) {
         for (Locale locale : localizations) {
             // note: using the key "__warmup__" is a bit hacky, but it dont matter because it is handled normally anyway
-            translate("__warmup__", locale, createFallback("__warmup__"));
+            translate(locale, "__warmup__", "__warmup__");
         }
-    }
-
-    default @NonNull Function<Locale, String> createFallback(final @NonNull String key) {
-        return locale -> "[" + locale.toLanguageTag().toLowerCase() + "/" + key + "]";
     }
 
     @NonNull Label createI18Label(@NonNull String key, @NonNull Function<Locale, String> fallback);
 
     @NonNull Label createLiteralLabel(@NonNull String literal);
 
-    @NonNull String translate(@NonNull String key, @NonNull Locale locale,
-                              @NonNull Function<Locale, String> fallback);
+    @NonNull String translate(@NonNull Locale locale, @NonNull String key,
+                              @NonNull String fallback) throws NullPointerException;
 
     <T> @NonNull T serialize(@NonNull Label label, @NonNull Class<T> type)
             throws SerializationException;
