@@ -25,15 +25,15 @@ public class LiteralLabel implements Label {
     private final @NonNull Set<Mapping> mappings;
     private final @NonNull String literal;
 
-    public LiteralLabel(@NonNull LabelProvider provider,
-                        @NonNull String literal) {
+    public LiteralLabel(final @NonNull LabelProvider provider,
+                        final @NonNull String literal) {
         this(provider, new HashSet<>(), literal);
     }
 
     @ApiStatus.Internal
-    public LiteralLabel(@NonNull LabelProvider provider,
-                        @NonNull Set<Mapping> mappings,
-                        @NonNull String literal) {
+    public LiteralLabel(final @NonNull LabelProvider provider,
+                        final @NonNull Set<Mapping> mappings,
+                        final @NonNull String literal) {
         this.provider = provider;
         this.mappings = mappings;
         this.literal = literal;
@@ -54,13 +54,13 @@ public class LiteralLabel implements Label {
     }
 
     @Override
-    public @NonNull Label mapTo(@NonNull Mapping mapping) {
+    public @NonNull Label mapTo(final @NonNull Mapping mapping) {
         mappings.add(mapping);
         return this;
     }
 
     @Override
-    public @NonNull String in(@NonNull Locale locale) {
+    public @NonNull String in(final @NonNull Locale locale) {
         return literal;
     }
 
@@ -75,7 +75,7 @@ public class LiteralLabel implements Label {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         LiteralLabel that = (LiteralLabel) obj;

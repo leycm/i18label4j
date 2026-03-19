@@ -57,14 +57,14 @@ public class LocaleLabel implements Label {
     }
 
     @Override
-    public @NonNull Label mapTo(@NonNull Mapping mapping) {
+    public @NonNull Label mapTo(final @NonNull Mapping mapping) {
         mappings.add(mapping);
         return this;
     }
 
     @Override
-    public @NonNull String in(@NonNull Locale locale) {
-        return provider.translate(key, locale, fallback);
+    public @NonNull String in(final @NonNull Locale locale) {
+        return provider.translate(locale, key, fallback.apply(locale));
     }
 
     @Override
@@ -78,7 +78,7 @@ public class LocaleLabel implements Label {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         LocaleLabel that = (LocaleLabel) obj;
@@ -90,6 +90,5 @@ public class LocaleLabel implements Label {
     public int hashCode() {
         return Objects.hash(provider, key);
     }
-
 
 }
