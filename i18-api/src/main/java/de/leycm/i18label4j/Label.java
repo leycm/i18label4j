@@ -11,7 +11,6 @@
 package de.leycm.i18label4j;
 
 import de.leycm.i18label4j.mapping.Mapping;
-import de.leycm.i18label4j.mapping.MappingRule;
 
 import lombok.NonNull;
 
