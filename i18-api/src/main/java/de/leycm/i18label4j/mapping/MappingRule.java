@@ -58,6 +58,7 @@ public class MappingRule {
     public static final @NonNull MappingRule MINECRAFT_LEGACY = new MappingRule("§:", "");
 
     private static final String REGEX_META = "\\.^$*+?()[]{}|";
+    private static final String KEY_REGEX = "([A-Za-z0-9_.\\-]+)";
     private static final String ESCAPED_PREFIX = "\u0001P";
     private static final String ESCAPED_SUFFIX = "\u0001S";
     private static final int INPUT_LIMIT = 100_000_000;
@@ -89,13 +90,9 @@ public class MappingRule {
         this.escapedSuffixLiteral = suffix.isEmpty() ? null : "\\" + suffix;
 
         if (suffix.isEmpty()) {
-            this.pattern = Pattern.compile(
-                    regexEscape(prefix) + "([A-Za-z0-9_]+)",
-                    Pattern.UNICODE_CASE
-            );
+            this.pattern = Pattern.compile(regexEscape(prefix) + KEY_REGEX, Pattern.UNICODE_CASE);
         } else {
-            this.pattern = Pattern.compile(Pattern.quote(prefix) +
-                    "([A-Za-z0-9_.\\-]+)" + Pattern.quote(suffix));
+            this.pattern = Pattern.compile(regexEscape(prefix) + KEY_REGEX + regexEscape(suffix));
         }
     }
 
