@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * runtime.</p>
  *
  * <p>The {@link #apply(String, Set)} method replaces all occurrences of
- * recognised placeholder tokens with their corresponding values from the
+ * recognized placeholder tokens with their corresponding values from the
  * supplied {@link Set} of {@link Mapping} instances. Unrecognised tokens
  * are left unchanged. Escape sequences (backslash before the prefix)
  * are protected and restored after substitution.</p>

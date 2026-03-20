@@ -12,9 +12,7 @@ package de.leycm.i18label4j;
 
 import de.leycm.i18label4j.exception.DeserializationException;
 import de.leycm.i18label4j.exception.FormatException;
-import de.leycm.i18label4j.exception.IncompatibleMatchException;
 import de.leycm.i18label4j.exception.SerializationException;
-import de.leycm.i18label4j.mapping.Mapping;
 import de.leycm.i18label4j.mapping.MappingRule;
 import de.leycm.i18label4j.serialize.LabelSerializer;
 import de.leycm.i18label4j.source.LocalizationSource;
@@ -150,7 +148,7 @@ public interface LabelProvider extends Instanceable {
      * for the same locale return the cached result without touching
      * the source again.</p>
      *
-     * <p>If the requested locale has no translation and it differs from
+     * <p>If the requested locale has no translation, and it differs from
      * the default locale, the default locale is tried as a second pass
      * before returning {@code fallback}.</p>
      *

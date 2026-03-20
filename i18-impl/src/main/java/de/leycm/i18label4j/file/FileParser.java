@@ -10,10 +10,12 @@
  */
 package de.leycm.i18label4j.file;
 
+import com.google.gson.JsonParseException;
 import com.moandjiezana.toml.Toml;
 import lombok.NonNull;
 import org.json.JSONObject;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.error.YAMLException;
 
 import java.io.StringReader;
 import java.net.URI;
@@ -109,11 +111,13 @@ public interface FileParser {
          *
          * @param uri the location of the JSON file; must not be {@code null}
          * @return a flat map of key-value pairs; never {@code null}
-         * @throws Exception if the file cannot be read or the JSON is malformed
+         * @throws JsonParseException if the JSON is malformed
+         * @throws IllegalArgumentException if the URI scheme is unsupported
+         * @throws RuntimeException if reading the file fails
          * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
-        public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {
+        public @NonNull Map<String, String> parse(final @NonNull URI uri) throws JsonParseException {
             final String content = FileUtils.readFile(uri);
             final JSONObject obj = new JSONObject(content);
 
@@ -160,11 +164,13 @@ public interface FileParser {
          *
          * @param uri the location of the YAML file; must not be {@code null}
          * @return a flat map of key-value pairs; never {@code null}
-         * @throws Exception if the file cannot be read or the YAML is malformed
+         * @throws YAMLException if the YAML is malformed
+         * @throws IllegalArgumentException if the URI scheme is unsupported
+         * @throws RuntimeException if reading the file fails
          * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
-        public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {
+        public @NonNull Map<String, String> parse(final @NonNull URI uri) throws YAMLException {
             final String content = FileUtils.readFile(uri);
             final Map<String, Object> raw;
             synchronized (YAML) {
@@ -204,11 +210,12 @@ public interface FileParser {
          *
          * @param uri the location of the TOML file; must not be {@code null}
          * @return a flat map of key-value pairs; never {@code null}
-         * @throws Exception if the file cannot be read or the TOML is malformed
+         * @throws IllegalArgumentException if the URI scheme is unsupported or the content is not a valid TOML table
+         * @throws RuntimeException if reading the file fails
          * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
-        public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {
+        public @NonNull Map<String, String> parse(final @NonNull URI uri) throws  {
             final String content = FileUtils.readFile(uri);
             final Map<String, Object> raw = TOML.read(content).toMap();
             return flattenRaw(raw);

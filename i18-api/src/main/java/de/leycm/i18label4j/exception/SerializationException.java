@@ -14,10 +14,6 @@ import de.leycm.i18label4j.Label;
 import de.leycm.i18label4j.LabelProvider;
 import de.leycm.i18label4j.serialize.LabelSerializer;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
-import java.lang.reflect.UndeclaredThrowableException;
-
 import lombok.NonNull;
 
 /**
