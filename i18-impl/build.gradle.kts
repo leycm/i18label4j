@@ -3,6 +3,8 @@ dependencies {
     compileOnly(libs.annos.jetbrains)
 
     compileOnly(project(":api"))
+
+    testImplementation(project(":api"))
 }
 
 tasks.named("sourcesJar") {

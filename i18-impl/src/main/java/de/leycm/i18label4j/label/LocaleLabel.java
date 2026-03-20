@@ -22,10 +22,10 @@ import java.util.function.Function;
 
 @SuppressWarnings("ClassCanBeRecord") // cause: mutable mappings
 public class LocaleLabel implements Label {
-    private final @NonNull LabelProvider provider;
-    private final @NonNull Set<Mapping> mappings;
-    private final @NonNull String key;
-    private final @NonNull Function<Locale, String> fallback;
+    private final LabelProvider provider;
+    private final Set<Mapping> mappings;
+    private final String key;
+    private final Function<Locale, String> fallback;
 
     public LocaleLabel(final @NonNull LabelProvider provider, final @NonNull String key,
                        final @NonNull Function<Locale, String> fallback) {
@@ -58,7 +58,8 @@ public class LocaleLabel implements Label {
     }
 
     @Override
-    public @NonNull Label mapTo(final @NonNull Mapping mapping) {
+    public @NonNull Label mapTo(final @NonNull Mapping mapping) throws IllegalArgumentException {
+        if (mappings.contains(mapping)) throw new IllegalArgumentException("Mapping with key \"" + mapping.key() + "\" already exists for this label.");
         mappings.add(mapping);
         return this;
     }

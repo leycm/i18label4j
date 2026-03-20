@@ -11,7 +11,6 @@
 package de.leycm.i18label4j;
 
 import de.leycm.i18label4j.mapping.Mapping;
-import de.leycm.i18label4j.mapping.MappingRule;
 
 import lombok.NonNull;
 
@@ -26,22 +25,16 @@ public interface Label {
     @NonNull Set<Mapping> getMappings();
 
     default @NonNull Label mapTo(final @NonNull String key,
-                                 final @NonNull Object value) {
+                                 final @NonNull Object value) throws IllegalArgumentException {
         return mapTo(key, () -> value);
     }
 
     default @NonNull Label mapTo(final @NonNull String key,
-                                 final @NonNull Supplier<Object> supplier) {
-        return mapTo(getProvider().getDefaultMappingRule(), key, supplier);
+                                 final @NonNull Supplier<Object> supplier) throws IllegalArgumentException {
+        return mapTo(new Mapping(key, supplier));
     }
 
-    default @NonNull Label mapTo(final @NonNull MappingRule rule,
-                                 final @NonNull String key,
-                                 final @NonNull Supplier<Object> supplier) {
-        return mapTo(new Mapping(rule, key, () -> String.valueOf(supplier.get())));
-    }
-
-    @NonNull Label mapTo(final @NonNull Mapping mapping);
+    @NonNull Label mapTo(final @NonNull Mapping mapping) throws IllegalArgumentException;
 
     default @NonNull String in() {
         return in(getProvider().getDefaultLocale());
@@ -70,7 +63,7 @@ public interface Label {
     }
 
     default @NonNull String mapped(@NonNull Locale locale) {
-        return Mapping.apply(getMappings(), in(locale));
+        return getProvider().getDefaultMappingRule().apply(in(locale), getMappings());
     }
 
     default <T> @NonNull T serialize(Class<T> type) {
