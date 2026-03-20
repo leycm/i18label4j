@@ -215,7 +215,7 @@ public interface FileParser {
          * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
-        public @NonNull Map<String, String> parse(final @NonNull URI uri) throws  {
+        public @NonNull Map<String, String> parse(final @NonNull URI uri) throws IllegalArgumentException {
             final String content = FileUtils.readFile(uri);
             final Map<String, Object> raw = TOML.read(content).toMap();
             return flattenRaw(raw);
