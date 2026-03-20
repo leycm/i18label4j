@@ -83,7 +83,7 @@ public class MappingRule {
         }
     }
 
-    @SuppressWarnings("IndexOfReplaceableByContains") // cause: we dont have to use CharSequence#toString()
+    @SuppressWarnings("IndexOfReplaceableByContains") // cause: we use .indexOf(prefix) < 0 instead of contains with the CharSequence#toString() call
     public String apply(@NonNull String input, @NonNull Set<Mapping> mappings) {
         if (input.length() > INPUT_LIMIT) throw new IllegalArgumentException("Input too large");
         if (mappings.isEmpty() || input.isEmpty() ) return input;
