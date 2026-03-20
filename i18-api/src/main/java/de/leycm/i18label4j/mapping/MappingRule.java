@@ -57,6 +57,7 @@ public class MappingRule {
     /** Minecraft Legacy style: {@code §:variable} */
     public static final @NonNull MappingRule MINECRAFT_LEGACY = new MappingRule("§:", "");
 
+    private static final String REGEX_META = "\\.^$*+?()[]{}|";
     private static final String ESCAPED_PREFIX = "\u0001P";
     private static final String ESCAPED_SUFFIX = "\u0001S";
     private static final int INPUT_LIMIT = 100_000_000;
@@ -69,6 +70,16 @@ public class MappingRule {
     private final @Nullable String escapedPrefixLiteral;
     private final @Nullable String escapedSuffixLiteral;
 
+    private static @NonNull String regexEscape(final @NonNull String s) {
+        StringBuilder sb = new StringBuilder(s.length() * 2);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (REGEX_META.indexOf(c) >= 0) sb.append('\\');
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
     public MappingRule(final @NonNull String prefix, final @NonNull String suffix) {
         this.prefix = prefix;
         this.suffix = suffix;
@@ -78,41 +89,33 @@ public class MappingRule {
         this.escapedSuffixLiteral = suffix.isEmpty() ? null : "\\" + suffix;
 
         if (suffix.isEmpty()) {
-            this.pattern = Pattern.compile(Pattern.quote(prefix) + "([A-Za-z0-9_]+)");
+            this.pattern = Pattern.compile(
+                    regexEscape(prefix) + "([A-Za-z0-9_]+)",
+                    Pattern.UNICODE_CASE
+            );
         } else {
             this.pattern = Pattern.compile(Pattern.quote(prefix) +
                     "([A-Za-z0-9_.\\-]+)" + Pattern.quote(suffix));
         }
     }
 
-    @SuppressWarnings("IndexOfReplaceableByContains") // cause: we use .indexOf(prefix) < 0 instead of contains with the CharSequence#toString() call
-    public String apply(@NonNull String input, @NonNull Set<Mapping> mappings) {
+    public @NonNull String apply(final @NonNull String input, final @NonNull Set<Mapping> mappings) {
         if (input.length() > INPUT_LIMIT) throw new IllegalArgumentException("Input too large");
-        if (mappings.isEmpty() || input.isEmpty() ) return input;
-        if (input.indexOf(prefix) < 0) return input;
+        if (mappings.isEmpty() || input.isEmpty()) return input;
 
-        final Map<String, String> lookup;
-        int size = mappings.size();
+        int firstPrefix = input.indexOf(prefix);
+        if (firstPrefix < 0) return input;
 
-        if (size == 1) {
-            Mapping m = mappings.iterator().next();
-            lookup = Map.of(m.key(), m.valueAsString());
-        } else {
-            lookup = new HashMap<>((int) (size / 0.75f) + 1);
-            for (Mapping m : mappings) {
-                lookup.put(m.key(), m.valueAsString());
-            }
-        }
+        final Map<String, String> lookup = buildLookup(mappings);
 
-        String working = input;
-        boolean hasEscape = input.indexOf('\\') >= 0;
+        boolean hasEscape = !prefix.isEmpty() && input.indexOf('\\') >= 0
+                && input.indexOf('\\' + prefix.charAt(0)) >= 0;
 
-        if (hasEscape) working = protectEscapes(working);
+        String working = hasEscape ? protectEscapes(input) : input;
 
         Matcher matcher = pattern.matcher(working);
 
         StringBuilder sb = null;
-
         int lastEnd = 0;
         int matchCount = 0;
 
@@ -121,16 +124,14 @@ public class MappingRule {
 
             String key = matcher.group(1);
             String replacement = lookup.get(key);
-
             if (replacement == null) continue;
 
             if (sb == null) {
-                sb = new StringBuilder(working.length());
+                sb = new StringBuilder(working.length() + 32);
             }
 
             sb.append(working, lastEnd, matcher.start());
             sb.append(replacement);
-
             lastEnd = matcher.end();
         }
 
@@ -142,13 +143,24 @@ public class MappingRule {
         return hasEscape ? restoreEscapes(result) : result;
     }
 
-    private String protectEscapes(String s) {
+    private @NonNull Map<String, String> buildLookup(final @NonNull Set<Mapping> mappings) {
+        int size = mappings.size();
+        if (size == 1) {
+            Mapping m = mappings.iterator().next();
+            return Map.of(m.key(), m.valueAsString());
+        }
+        Map<String, String> map = new HashMap<>((int) (size / 0.75f) + 1);
+        for (Mapping m : mappings) map.put(m.key(), m.valueAsString());
+        return map;
+    }
+
+    private @NonNull String protectEscapes(@NonNull String s) {
         if (escapedPrefixLiteral != null) s = s.replace(escapedPrefixLiteral, ESCAPED_PREFIX);
         if (escapedSuffixLiteral != null) s = s.replace(escapedSuffixLiteral, ESCAPED_SUFFIX);
         return s;
     }
 
-    private String restoreEscapes(String s) {
+    private @NonNull String restoreEscapes(@NonNull String s) {
         if (escapedPrefixLiteral != null) s = s.replace(ESCAPED_PREFIX, prefix);
         if (escapedSuffixLiteral != null) s = s.replace(ESCAPED_SUFFIX, suffix);
         return s;
