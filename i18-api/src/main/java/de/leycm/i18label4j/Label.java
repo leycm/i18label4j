@@ -25,16 +25,16 @@ public interface Label {
     @NonNull Set<Mapping> getMappings();
 
     default @NonNull Label mapTo(final @NonNull String key,
-                                 final @NonNull Object value) {
+                                 final @NonNull Object value) throws IllegalArgumentException {
         return mapTo(key, () -> value);
     }
 
     default @NonNull Label mapTo(final @NonNull String key,
-                                 final @NonNull Supplier<Object> supplier) {
+                                 final @NonNull Supplier<Object> supplier) throws IllegalArgumentException {
         return mapTo(new Mapping(key, () -> String.valueOf(supplier.get())));
     }
 
-    @NonNull Label mapTo(final @NonNull Mapping mapping);
+    @NonNull Label mapTo(final @NonNull Mapping mapping) throws IllegalArgumentException;
 
     default @NonNull String in() {
         return in(getProvider().getDefaultLocale());

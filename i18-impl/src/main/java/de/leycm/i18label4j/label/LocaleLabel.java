@@ -58,7 +58,8 @@ public class LocaleLabel implements Label {
     }
 
     @Override
-    public @NonNull Label mapTo(final @NonNull Mapping mapping) {
+    public @NonNull Label mapTo(final @NonNull Mapping mapping) throws IllegalArgumentException {
+        if (mappings.contains(mapping)) throw new IllegalArgumentException("Mapping with key \"" + mapping.key() + "\" already exists for this label.");
         mappings.add(mapping);
         return this;
     }
