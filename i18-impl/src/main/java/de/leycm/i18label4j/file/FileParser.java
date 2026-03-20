@@ -10,14 +10,11 @@
  */
 package de.leycm.i18label4j.file;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-
+import com.moandjiezana.toml.Toml;
 import lombok.NonNull;
+import org.json.JSONObject;
+import org.yaml.snakeyaml.Yaml;
 
-import java.util.Properties;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.*;
@@ -28,15 +25,13 @@ import java.util.*;
  *
  * <p>Each implementation handles one file format (JSON, YAML, TOML, or
  * {@code .properties}) and is identified by its {@link #extension()}. The
- * concrete classes {@link Json}, {@link Yaml}, {@link Toml}, and
+ * concrete classes {@link Json}, {@link YamlParser}, {@link TomlParser}, and
  * {@link Property} are nested inside this interface for namespace
  * cohesion.</p>
  *
  * <p>Files are read via {@link FileUtils}, which abstracts over the
  * underlying storage scheme (classpath resource, local file system, or
- * remote URL). The raw Jackson/Properties map is flattened to
- * {@code String} values by converting each value through
- * {@link String#valueOf(Object)}.</p>
+ * remote URL).</p>
  *
  * <p>Thread Safety: All built-in implementations are effectively
  * immutable and therefore safe for concurrent use.</p>
@@ -59,14 +54,8 @@ public interface FileParser {
      * Reads the file at the given URI and returns a flat
      * {@code Map<String, String>} of all key-value pairs.
      *
-     * <p>The exact exception type depends on the parser implementation
-     * and the underlying IO operation. Callers must handle
-     * {@link Exception} broadly.</p>
-     *
-     * @param uri the location of the file to parse;
-     *            must not be {@code null}
-     * @return a map of translation entries; never {@code null},
-     *         may be empty
+     * @param uri the location of the file to parse; must not be {@code null}
+     * @return a map of translation entries; never {@code null}, may be empty
      * @throws Exception if the file cannot be read or the content is
      *                   malformed for this parser's format
      * @throws NullPointerException if {@code uri} is {@code null}
@@ -74,14 +63,14 @@ public interface FileParser {
     @NonNull Map<String, String> parse(@NonNull URI uri) throws Exception;
 
     /**
-     * Converts a raw {@code Map<String, Object>} (as returned by
-     * Jackson mappers) into a {@code Map<String, String>} by calling
-     * {@link String#valueOf(Object)} on each value.
+     * Converts a raw {@code Map<String, Object>} into a
+     * {@code Map<String, String>} by calling {@link String#valueOf(Object)}
+     * on each value.
      *
      * <p>{@code null} values in {@code raw} are preserved as
      * {@code null} in the result.</p>
      *
-     * @param raw the raw map from Jackson; must not be {@code null}
+     * @param raw the raw map; must not be {@code null}
      * @return a flat string map; never {@code null}
      */
     private static @NonNull Map<String, String> flattenRaw(
@@ -97,17 +86,13 @@ public interface FileParser {
     /**
      * {@link FileParser} implementation for JSON files.
      *
-     * <p>Uses Jackson's {@link ObjectMapper} to parse the file content,
-     * then flattens all top-level values to strings. Only flat
-     * (non-nested) JSON objects are supported.</p>
+     * <p>Uses {@link JSONObject} (org.json) to parse the file content.
+     * Only flat (non-nested) JSON objects are supported.</p>
      *
      * @since 1.0
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
     final class Json implements FileParser {
-
-        // reusable Jackson mapper — ObjectMapper is thread-safe after configuration
-        private final ObjectMapper mapper = new ObjectMapper();
 
         /**
          * Returns {@code "json"}.
@@ -124,30 +109,41 @@ public interface FileParser {
          *
          * @param uri the location of the JSON file; must not be {@code null}
          * @return a flat map of key-value pairs; never {@code null}
-         * @throws Exception if the file cannot be read or the JSON is
-         *                   malformed
+         * @throws Exception if the file cannot be read or the JSON is malformed
          * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
         public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {
-            String content = FileUtils.readFile(uri);
-            return flattenRaw(mapper.readValue(content, new TypeReference<>() {}));
+            final String content = FileUtils.readFile(uri);
+            final JSONObject obj = new JSONObject(content);
+
+            final Map<String, String> result = new LinkedHashMap<>();
+            for (String key : obj.keySet()) {
+                Object val = obj.get(key);
+                result.put(key, val == JSONObject.NULL ? null : val.toString());
+            }
+            return result;
         }
     }
 
     /**
      * {@link FileParser} implementation for YAML files ({@code .yml}).
      *
-     * <p>Uses Jackson's {@link YAMLMapper} to parse the file content.
+     * <p>Uses SnakeYAML to parse the file content. A single {@link Yaml}
+     * instance is reused across all calls via the {@code YAML} constant.
      * Only flat (non-nested) YAML mappings are supported.</p>
+     *
+     * <p><b>Note:</b> SnakeYAML's {@link Yaml} is not thread-safe. If
+     * concurrent parsing is required, synchronize on {@code YAML} or
+     * construct a new instance per call.</p>
      *
      * @since 1.0
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
-    final class Yaml implements FileParser {
+    final class YamlParser implements FileParser {
 
-        // reusable Jackson YAML mapper — thread-safe after configuration
-        private final YAMLMapper mapper = new YAMLMapper();
+        /** Shared SnakeYAML instance. Not thread-safe — synchronize if needed. */
+        private static final Yaml YAML = new Yaml();
 
         /**
          * Returns {@code "yml"}.
@@ -164,30 +160,34 @@ public interface FileParser {
          *
          * @param uri the location of the YAML file; must not be {@code null}
          * @return a flat map of key-value pairs; never {@code null}
-         * @throws Exception if the file cannot be read or the YAML is
-         *                   malformed
+         * @throws Exception if the file cannot be read or the YAML is malformed
          * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
         public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {
-            String content = FileUtils.readFile(uri);
-            return flattenRaw(mapper.readValue(content, new TypeReference<>() {}));
+            final String content = FileUtils.readFile(uri);
+            final Map<String, Object> raw;
+            synchronized (YAML) {
+                raw = YAML.load(content);
+            }
+            return flattenRaw(raw == null ? Collections.emptyMap() : raw);
         }
     }
 
     /**
      * {@link FileParser} implementation for TOML files.
      *
-     * <p>Uses Jackson's {@link TomlMapper} to parse the file content.
+     * <p>Uses toml4j to parse the file content. A single {@link Toml}
+     * instance is reused across all calls via the {@code TOML} constant.
      * Only flat (non-nested) TOML tables are supported.</p>
      *
      * @since 1.0
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
-    final class Toml implements FileParser {
+    final class TomlParser implements FileParser {
 
-        // reusable Jackson TOML mapper — thread-safe after configuration
-        private final TomlMapper mapper = new TomlMapper();
+        /** Shared toml4j instance. */
+        private static final Toml TOML = new Toml();
 
         /**
          * Returns {@code "toml"}.
@@ -204,14 +204,14 @@ public interface FileParser {
          *
          * @param uri the location of the TOML file; must not be {@code null}
          * @return a flat map of key-value pairs; never {@code null}
-         * @throws Exception if the file cannot be read or the TOML is
-         *                   malformed
+         * @throws Exception if the file cannot be read or the TOML is malformed
          * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
         public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {
-            String content = FileUtils.readFile(uri);
-            return flattenRaw(mapper.readValue(content, new TypeReference<>() {}));
+            final String content = FileUtils.readFile(uri);
+            final Map<String, Object> raw = TOML.read(content).toMap();
+            return flattenRaw(raw);
         }
     }
 
@@ -219,8 +219,7 @@ public interface FileParser {
      * {@link FileParser} implementation for Java {@code .properties} files.
      *
      * <p>Uses {@link Properties} to parse the file content.
-     * All string property names and values are returned as-is without
-     * any transformation.</p>
+     * All string property names and values are returned as-is.</p>
      *
      * @since 1.0
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
@@ -240,21 +239,22 @@ public interface FileParser {
         /**
          * Reads and parses a {@code .properties} file.
          *
-         * @param uri the location of the properties file;
-         *            must not be {@code null}
+         * @param uri the location of the properties file; must not be {@code null}
          * @return a map of key-value pairs; never {@code null}
          * @throws Exception if the file cannot be read or is malformed
          * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
         public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {
-            String content = FileUtils.readFile(uri);
-            Properties props = new Properties();
+            final String content = FileUtils.readFile(uri);
+            final Properties props = new Properties();
             props.load(new StringReader(content));
-            Map<String, String> result = new LinkedHashMap<>();
+
+            final Map<String, String> result = new LinkedHashMap<>();
             for (String key : props.stringPropertyNames()) {
                 result.put(key, props.getProperty(key));
             }
+
             return result;
         }
     }

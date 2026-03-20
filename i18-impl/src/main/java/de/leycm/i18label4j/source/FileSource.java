@@ -130,7 +130,7 @@ public final class FileSource implements LocalizationSource {
      */
     @Contract("_ -> new")
     public static @NonNull FileSource yaml(final @NonNull URI directory) {
-        return new FileSource(directory, new FileParser.Yaml());
+        return new FileSource(directory, new FileParser.YamlParser());
     }
 
     /**
@@ -141,7 +141,7 @@ public final class FileSource implements LocalizationSource {
      */
     @Contract("_ -> new")
     public static @NonNull FileSource toml(final @NonNull URI directory) {
-        return new FileSource(directory, new FileParser.Toml());
+        return new FileSource(directory, new FileParser.TomlParser());
     }
 
     /**
