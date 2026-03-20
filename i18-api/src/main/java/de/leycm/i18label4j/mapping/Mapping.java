@@ -26,7 +26,7 @@ public record Mapping(@NonNull String key,
     public String toString() {
         return Mapping.class.getSimpleName() + "{" +
                 "key=\"" + key + '\"' +
-                ", value=" + value.get() +
+                ", valueSupplier=" + value +
                 '}';
     }
 
