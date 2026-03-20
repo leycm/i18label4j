@@ -45,7 +45,7 @@ public class MappingRule {
     /** Bracket style: {@code [variable]} (BBCode, Wiki-Syntax) */
     public static final @NonNull MappingRule BRACKET = new MappingRule("[", "]");
 
-    /** Shell style: {@code $variable} (Unix Shell, PHP) */
+    /** Shell like style: {@code $variable} (Unix Shell, PHP) */
     public static final @NonNull MappingRule SHELL = new MappingRule("$", "");
 
     /** Format String style: {@code %variable} (C-style, String.format) */
@@ -57,11 +57,11 @@ public class MappingRule {
     /** Minecraft Legacy style: {@code §:variable} */
     public static final @NonNull MappingRule MINECRAFT_LEGACY = new MappingRule("§:", "");
 
-    private static final String REGEX_META = "\\.^$*+?()[]{}|";
-    private static final String KEY_REGEX = "([A-Za-z0-9_.\\-]+)";
+    private static final String REGEX_META = "\\.^§$*+?()[]{}|";
+    private static final String KEY_REGEX = "([A-Za-z0-9_\\-]+)";
     private static final String ESCAPED_PREFIX = "\u0001P";
     private static final String ESCAPED_SUFFIX = "\u0001S";
-    private static final int INPUT_LIMIT = 100_000_000;
+    private static final int INPUT_LIMIT = 1_000_000; // 1mb should be enough for everyone
     private static final int MAX_MATCHES = 10_000;
 
     private final String prefix;
