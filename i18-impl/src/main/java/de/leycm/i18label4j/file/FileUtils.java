@@ -57,7 +57,7 @@ public final class FileUtils {
      * Returns the set of child {@link URI}s contained in the directory
      * at {@code uri}.
      *
-     * <p>The returned URIs reference both files and sub-directories
+     * <p>The returned URIs reference both files and subdirectories
      * directly inside the given directory — no recursive traversal is
      * performed.</p>
      *
@@ -75,6 +75,7 @@ public final class FileUtils {
             case "resource" -> readDirResource(uri);
             case "http", "https" -> readDirRemote(uri);
             case "file" -> readDirFile(uri);
+            case null -> readDirFile(uri); // treat scheme-less URIs as file paths
             default -> throw new IllegalArgumentException("Unsupported scheme: " + uri.getScheme());
         };
     }
@@ -93,6 +94,7 @@ public final class FileUtils {
             case "resource" -> readFileResource(uri);
             case "http", "https" -> readFileRemote(uri);
             case "file" -> readFileFile(uri);
+            case null -> readFileFile(uri); // treat scheme-less URIs as file paths
             default -> throw new IllegalArgumentException("Unsupported scheme: " + uri.getScheme());
         };
     }
@@ -110,6 +112,7 @@ public final class FileUtils {
             case "resource" -> isDirResource(uri);
             case "http", "https" -> isDirRemote(uri);
             case "file" -> isDirFile(uri);
+            case null -> isDirFile(uri); // treat scheme-less URIs as file paths
             default -> throw new IllegalArgumentException("Unsupported scheme: " + uri.getScheme());
         };
     }
@@ -127,6 +130,7 @@ public final class FileUtils {
             case "resource" -> isFileResource(uri);
             case "http", "https" -> isFileRemote(uri);
             case "file" -> isFileFile(uri);
+            case null -> isFileFile(uri);
             default -> throw new IllegalArgumentException("Unsupported scheme: " + uri.getScheme());
         };
     }
@@ -147,9 +151,7 @@ public final class FileUtils {
     private static @NonNull Set<URI> readDirResource(final @NonNull URI uri) {
         String path = resourcePath(uri);
         URL url = FileUtils.class.getClassLoader().getResource(path);
-        if (url == null) {
-            throw new IllegalArgumentException("Resource directory does not exist: " + uri);
-        }
+        if (url == null) throw new IllegalArgumentException("Resource directory does not exist: " + uri);
 
         try {
             if ("file".equals(url.getProtocol())) {

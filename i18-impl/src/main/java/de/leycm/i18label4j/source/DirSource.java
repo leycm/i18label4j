@@ -153,7 +153,7 @@ public final class DirSource implements LocalizationSource {
      */
     @Contract("_ -> new")
     public static @NonNull DirSource yaml(final @NonNull URI directory) {
-        return new DirSource(directory, new FileParser.Yaml());
+        return new DirSource(directory, new FileParser.YamlParser());
     }
 
     /**
@@ -164,7 +164,7 @@ public final class DirSource implements LocalizationSource {
      */
     @Contract("_ -> new")
     public static @NonNull DirSource toml(final @NonNull URI directory) {
-        return new DirSource(directory, new FileParser.Toml());
+        return new DirSource(directory, new FileParser.TomlParser());
     }
 
     /**
