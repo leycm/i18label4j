@@ -38,7 +38,7 @@ import java.util.function.Supplier;
  * @param value the supplier evaluated to produce the replacement string;
  *              never {@code null}
  *
- * @since 1.0.0
+ * @since 1.0
  * @see MappingRule
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
@@ -58,6 +58,26 @@ public record Mapping(@NonNull String key,
      */
     public @NonNull String valueAsString() {
         return String.valueOf(value.get());
+    }
+
+    /**
+     * Returns the placeholder key matched in source text.
+     *
+     * @return the placeholder key; never {@code null}
+     */
+    @Override
+    public @NonNull String key() {
+        return key;
+    }
+
+    /**
+     * Returns the supplier evaluated to produce the replacement string.
+     *
+     * @return the value supplier; never {@code null}
+     */
+    @Override
+    public @NonNull Supplier<Object> value() {
+        return value;
     }
 
     /**

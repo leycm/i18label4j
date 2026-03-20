@@ -10,7 +10,10 @@
  */
 package de.leycm.i18label4j;
 
-import de.leycm.i18label4j.exception.*;
+import de.leycm.i18label4j.exception.DeserializationException;
+import de.leycm.i18label4j.exception.FormatException;
+import de.leycm.i18label4j.exception.IncompatibleMatchException;
+import de.leycm.i18label4j.exception.SerializationException;
 import de.leycm.i18label4j.label.LiteralLabel;
 import de.leycm.i18label4j.label.LocaleLabel;
 import de.leycm.i18label4j.mapping.MappingRule;
@@ -49,7 +52,7 @@ import java.util.stream.Collectors;
  * internal state is either immutable or protected by concurrent
  * structures.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @see LabelProvider
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
@@ -66,7 +69,7 @@ public class CommonLabelProvider implements LabelProvider {
      * <p>Thread Safety: Builder instances are not thread-safe and must
      * not be shared across threads.</p>
      *
-     * @since 1.0.0
+     * @since 1.0
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
     public static class Builder {
@@ -93,6 +96,8 @@ public class CommonLabelProvider implements LabelProvider {
          * @param serializer the serializer implementation;
          *                   must not be {@code null}
          * @return this builder for method chaining; never {@code null}
+         * @throws NullPointerException if {@code type} or {@code serializer}
+         *                              is {@code null}
          */
         public @NonNull Builder withSerializer(final @NonNull Class<?> type,
                                                final @NonNull LabelSerializer<?> serializer) {
@@ -108,6 +113,7 @@ public class CommonLabelProvider implements LabelProvider {
          *
          * @param rule the mapping rule; must not be {@code null}
          * @return this builder for method chaining; never {@code null}
+         * @throws NullPointerException if {@code rule} is {@code null}
          */
         public @NonNull Builder defaultMappingRule(final @NonNull MappingRule rule) {
             this.defaultMappingRule = rule;
@@ -122,6 +128,7 @@ public class CommonLabelProvider implements LabelProvider {
          *
          * @param locale the default locale; must not be {@code null}
          * @return this builder for method chaining; never {@code null}
+         * @throws NullPointerException if {@code locale} is {@code null}
          */
         public @NonNull Builder locale(final @NonNull Locale locale) {
             this.defaultLocale = locale;
@@ -134,6 +141,7 @@ public class CommonLabelProvider implements LabelProvider {
          *
          * @param source the localization source to use; must not be {@code null}
          * @return a new {@link CommonLabelProvider}; never {@code null}
+         * @throws NullPointerException if {@code source} is {@code null}
          */
         public @NonNull CommonLabelProvider build(final @NonNull LocalizationSource source) {
             return new CommonLabelProvider(serializerRegistry, defaultMappingRule, source, defaultLocale);
@@ -152,6 +160,8 @@ public class CommonLabelProvider implements LabelProvider {
          * @return a new, pre-warmed {@link CommonLabelProvider}; never {@code null}
          * @throws IllegalArgumentException if any locale's translation data
          *                                  cannot be loaded from the source
+         * @throws NullPointerException     if {@code source} or {@code locales}
+         *                                  is {@code null} or contains {@code null}
          */
         public @NonNull CommonLabelProvider buildWarm(final @NonNull LocalizationSource source,
                                                       final @NonNull Locale... locales) {
@@ -196,6 +206,7 @@ public class CommonLabelProvider implements LabelProvider {
      *                         must not be {@code null}
      * @param defaultLocale    the locale used when none is specified;
      *                         must not be {@code null}
+     * @throws NullPointerException if any parameter is {@code null}
      */
     public CommonLabelProvider(
             final @NonNull Map<Class<?>, LabelSerializer<?>> serializers,

@@ -12,7 +12,9 @@ package de.leycm.i18label4j.serialize;
 
 import de.leycm.i18label4j.Label;
 import de.leycm.i18label4j.LabelProvider;
-import de.leycm.i18label4j.exception.*;
+import de.leycm.i18label4j.exception.DeserializationException;
+import de.leycm.i18label4j.exception.FormatException;
+import de.leycm.i18label4j.exception.SerializationException;
 
 import lombok.NonNull;
 
@@ -35,7 +37,7 @@ import lombok.NonNull;
  *
  * @param <T> the target serialization type
  *
- * @since 1.0.0
+ * @since 1.0
  * @see LabelProvider
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */

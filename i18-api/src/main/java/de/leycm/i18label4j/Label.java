@@ -12,6 +12,9 @@ package de.leycm.i18label4j;
 
 import de.leycm.i18label4j.mapping.Mapping;
 import de.leycm.i18label4j.mapping.MappingRule;
+import de.leycm.i18label4j.serialize.LabelSerializer;
+import de.leycm.i18label4j.exception.SerializationException;
+import de.leycm.i18label4j.exception.FormatException;
 
 import lombok.NonNull;
 
@@ -38,7 +41,7 @@ import java.util.function.Supplier;
  * modified from a single thread unless the implementation documents
  * otherwise.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @see LabelProvider
  * @see Mapping
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
@@ -131,7 +134,7 @@ public interface Label {
      * @param <T>  the target type
      * @param type the class of the target type; must not be {@code null}
      * @return the formatted value; never {@code null}
-     * @throws de.leycm.i18label4j.exception.FormatException if no
+     * @throws FormatException if no
      *         serializer is registered for {@code type}, or if conversion fails
      * @throws IllegalArgumentException if {@code type} is not a supported
      *         serialization target
@@ -151,7 +154,7 @@ public interface Label {
      * @param locale the locale to resolve for; must not be {@code null}
      * @param type   the class of the target type; must not be {@code null}
      * @return the formatted value; never {@code null}
-     * @throws de.leycm.i18label4j.exception.FormatException if no
+     * @throws FormatException if no
      *         serializer is registered for {@code type}, or if conversion fails
      * @throws IllegalArgumentException if {@code type} is not a supported
      *         serialization target
@@ -193,7 +196,7 @@ public interface Label {
      * @param <T>  the target type
      * @param type the class of the target type; must not be {@code null}
      * @return the formatted, substituted value; never {@code null}
-     * @throws de.leycm.i18label4j.exception.FormatException if no
+     * @throws FormatException if no
      *         serializer is registered for {@code type}, or if conversion fails
      * @throws IllegalArgumentException if {@code type} is not supported
      *         or the text exceeds the mapping engine's input size limit
@@ -210,7 +213,7 @@ public interface Label {
      * @param locale the locale to resolve for; must not be {@code null}
      * @param type   the class of the target type; must not be {@code null}
      * @return the formatted, substituted value; never {@code null}
-     * @throws de.leycm.i18label4j.exception.FormatException if no
+     * @throws FormatException if no
      *         serializer is registered for {@code type}, or if conversion fails
      * @throws IllegalArgumentException if {@code type} is not supported
      *         or the text exceeds the mapping engine's input size limit
@@ -234,15 +237,14 @@ public interface Label {
 
     /**
      * Serializes this label into the requested type {@code T} using the
-     * registered {@link de.leycm.i18label4j.serialize.LabelSerializer}.
+     * registered {@link LabelSerializer}.
      *
      * @param <T>  the target type
      * @param type the class of the target type; must not be {@code null}
      * @return the serialized representation; never {@code null}
-     * @throws de.leycm.i18label4j.exception.SerializationException if
-     *         serialization fails
+     * @throws SerializationException if serialization fails
      * @throws IllegalArgumentException if no serializer is registered
-     *         for {@code type}
+     *                                 for {@code type}
      */
     default <T> @NonNull T serialize(Class<T> type) {
         return getProvider().serialize(this, type);

@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
  * @param localized the translated string, or {@code null} when no
  *                  translation was found
  *
- * @since 1.0.0
+ * @since 1.0
  * @see CommonLabelProvider
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
@@ -46,5 +46,16 @@ public record LocalizedResult(@Nullable String localized) {
      */
     public @NonNull String or(final @NonNull String defaultValue) {
         return localized != null ? localized : defaultValue;
+    }
+
+    /**
+     * Returns the translated string value.
+     *
+     * @return the translated string, or {@code null} when no translation
+     *         was found for the requested key and locale
+     */
+    @Override
+    public @Nullable String localized() {
+        return localized;
     }
 }

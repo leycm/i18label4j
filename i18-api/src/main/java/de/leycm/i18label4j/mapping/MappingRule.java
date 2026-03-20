@@ -14,10 +14,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,7 +39,7 @@ import java.util.regex.Pattern;
  * <p>Thread Safety: Instances are effectively immutable after construction
  * and may be shared freely across threads.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @see Mapping
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
@@ -133,6 +130,10 @@ public class MappingRule {
      *               may be empty only when suffix is also empty
      * @param suffix the closing delimiter; must not be {@code null},
      *               may be empty
+     * @throws NullPointerException if {@code prefix} or {@code suffix}
+     *                              is {@code null}
+     * @throws IllegalArgumentException if both {@code prefix} and
+     *                                  {@code suffix} are empty
      */
     public MappingRule(final @NonNull String prefix, final @NonNull String suffix) {
         this.prefix = prefix;
@@ -173,6 +174,8 @@ public class MappingRule {
      *         {@code mappings} is empty.
      * @throws IllegalArgumentException if {@code input} exceeds
      *                                  {@code 1 000 000} characters
+     * @throws NullPointerException     if {@code input} or {@code mappings}
+     *                                  is {@code null}
      */
     public @NonNull String apply(final @NonNull String input,
                                  final @NonNull Set<Mapping> mappings) {

@@ -12,7 +12,11 @@ package de.leycm.i18label4j.exception;
 
 import de.leycm.i18label4j.LabelProvider;
 import de.leycm.i18label4j.serialize.LabelSerializer;
+
 import lombok.NonNull;
+
+import java.io.Serializable;
+import java.util.Comparator;
 
 /**
  * Thrown when a raw string cannot be converted into the requested
@@ -30,7 +34,7 @@ import lombok.NonNull;
  * <p>Thread Safety: Exception instances are not required to be
  * thread-safe; they should not be shared across threads.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @see LabelProvider#format(String, Class)
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
@@ -58,7 +62,7 @@ public class FormatException extends RuntimeException {
      */
     public FormatException(final @NonNull String source,
                            final @NonNull Throwable cause) {
-        super(String.format("Value '%s' could not be formated:", source), cause);
+        super(String.format("Value '%s' could not be formatted:", source), cause);
     }
 
     /**
@@ -77,6 +81,6 @@ public class FormatException extends RuntimeException {
     public FormatException(final @NonNull String source,
                            final @NonNull Class<?> clazz,
                            final @NonNull Throwable cause) {
-        super(String.format("Value '%s' could not be formated into %s:", source, clazz.getName()), cause);
+        super(String.format("Value '%s' could not be formatted into %s:", source, clazz.getName()), cause);
     }
 }

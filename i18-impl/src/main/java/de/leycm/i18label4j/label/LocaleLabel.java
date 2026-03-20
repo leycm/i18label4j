@@ -13,8 +13,8 @@ package de.leycm.i18label4j.label;
 import de.leycm.i18label4j.Label;
 import de.leycm.i18label4j.LabelProvider;
 import de.leycm.i18label4j.mapping.Mapping;
-
 import de.leycm.i18label4j.mapping.MappingRule;
+
 import lombok.NonNull;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -46,7 +46,7 @@ import java.util.function.Function;
  * {@code mappings} set is not synchronised; instances must not be
  * modified and accessed from multiple threads concurrently.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @see Label
  * @see LabelProvider#createI18Label(String, Function)
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>

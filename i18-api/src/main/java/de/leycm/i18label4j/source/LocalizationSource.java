@@ -14,10 +14,9 @@ import de.leycm.i18label4j.LabelProvider;
 
 import lombok.NonNull;
 
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.NoSuchElementException;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Abstraction over a storage backend that provides raw translation maps.
@@ -39,7 +38,7 @@ import java.util.Set;
  * to the source through its own internal cache, so source implementations
  * are typically only called once per locale.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @see LabelProvider
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
@@ -68,8 +67,8 @@ public interface LocalizationSource extends Iterable<Locale> {
      *
      * <p>Note: the exception behavior (which exception types are thrown
      * and under which conditions) is defined by the implementation.
-     * Common examples include {@link java.util.NoSuchElementException}
-     * when the locale is unknown, or {@link java.io.IOException} when
+     * Common examples include {@link NoSuchElementException}
+     * when the locale is unknown, or {@link IOException} when
      * the underlying resource cannot be read.</p>
      *
      * @param locale the locale to load translations for; must not be {@code null}

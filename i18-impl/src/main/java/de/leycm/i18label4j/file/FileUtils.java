@@ -12,10 +12,7 @@ package de.leycm.i18label4j.file;
 
 import lombok.NonNull;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -45,7 +42,7 @@ import java.util.stream.Stream;
  *
  * <p>Thread Safety: All methods are stateless and therefore thread-safe.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
 public final class FileUtils {
@@ -71,6 +68,7 @@ public final class FileUtils {
      *         {@code https}; or if the URI does not point to a directory
      * @throws RuntimeException if listing the directory fails for any
      *                          IO or JAR-access reason
+     * @throws NullPointerException if {@code uri} is {@code null}
      */
     public static @NonNull Set<URI> readDir(final @NonNull URI uri) {
         return switch (uri.getScheme()) {
@@ -88,6 +86,7 @@ public final class FileUtils {
      * @return the file contents as a string; never {@code null}
      * @throws IllegalArgumentException if the URI scheme is unsupported
      * @throws RuntimeException         if reading the file fails
+     * @throws NullPointerException     if {@code uri} is {@code null}
      */
     public static @NonNull String readFile(final @NonNull URI uri) {
         return switch (uri.getScheme()) {
@@ -104,6 +103,7 @@ public final class FileUtils {
      * @param uri the URI to test; must not be {@code null}
      * @return {@code true} if the URI is a directory; {@code false} otherwise
      * @throws IllegalArgumentException if the URI scheme is unsupported
+     * @throws NullPointerException     if {@code uri} is {@code null}
      */
     public static boolean isDir(final @NonNull URI uri) {
         return switch (uri.getScheme()) {
@@ -120,6 +120,7 @@ public final class FileUtils {
      * @param uri the URI to test; must not be {@code null}
      * @return {@code true} if the URI is a file; {@code false} otherwise
      * @throws IllegalArgumentException if the URI scheme is unsupported
+     * @throws NullPointerException     if {@code uri} is {@code null}
      */
     public static boolean isFile(final @NonNull URI uri) {
         return switch (uri.getScheme()) {

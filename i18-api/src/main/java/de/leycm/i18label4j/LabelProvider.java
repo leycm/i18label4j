@@ -10,7 +10,11 @@
  */
 package de.leycm.i18label4j;
 
-import de.leycm.i18label4j.exception.*;
+import de.leycm.i18label4j.exception.DeserializationException;
+import de.leycm.i18label4j.exception.FormatException;
+import de.leycm.i18label4j.exception.IncompatibleMatchException;
+import de.leycm.i18label4j.exception.SerializationException;
+import de.leycm.i18label4j.mapping.Mapping;
 import de.leycm.i18label4j.mapping.MappingRule;
 import de.leycm.i18label4j.serialize.LabelSerializer;
 import de.leycm.i18label4j.source.LocalizationSource;
@@ -40,7 +44,7 @@ import java.util.function.Function;
  * concrete implementation. The reference implementation
  * {@code CommonLabelProvider} is thread-safe.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @see Label
  * @see LocalizationSource
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
@@ -167,9 +171,9 @@ public interface LabelProvider extends Instanceable {
      * Serializes a {@link Label} into the requested type {@code T}.
      *
      * <p>Looks up the registered
-     * {@link de.leycm.i18label4j.serialize.LabelSerializer} for
+     * {@link LabelSerializer} for
      * {@code type} and delegates to its
-     * {@link de.leycm.i18label4j.serialize.LabelSerializer#serialize(Label)}
+     * {@link LabelSerializer#serialize(Label)}
      * method.</p>
      *
      * @param <T>   the target type
@@ -190,9 +194,9 @@ public interface LabelProvider extends Instanceable {
      * Deserializes a serialized value back into a {@link Label}.
      *
      * <p>Looks up the registered
-     * {@link de.leycm.i18label4j.serialize.LabelSerializer} for the
+     * {@link LabelSerializer} for the
      * runtime type of {@code serialized} and delegates to its
-     * {@link de.leycm.i18label4j.serialize.LabelSerializer#deserialize(Object)}
+     * {@link LabelSerializer#deserialize(Object)}
      * method.</p>
      *
      * @param <T>        the source type

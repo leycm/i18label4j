@@ -16,7 +16,6 @@ import de.leycm.i18label4j.file.FileUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.util.*;
@@ -42,7 +41,7 @@ import java.util.*;
  * <p>Thread Safety: Instances are effectively immutable after construction
  * and may be shared across threads safely.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @see LocalizationSource
  * @see DirSource
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
@@ -119,7 +118,7 @@ public final class FileSource implements LocalizationSource {
      * @return a new {@link FileSource}; never {@code null}
      */
     @Contract("_ -> new")
-    public static @NotNull FileSource json(final @NonNull URI directory) {
+    public static @NonNull FileSource json(final @NonNull URI directory) {
         return new FileSource(directory, new FileParser.Json());
     }
 
@@ -130,7 +129,7 @@ public final class FileSource implements LocalizationSource {
      * @return a new {@link FileSource}; never {@code null}
      */
     @Contract("_ -> new")
-    public static @NotNull FileSource yaml(final @NonNull URI directory) {
+    public static @NonNull FileSource yaml(final @NonNull URI directory) {
         return new FileSource(directory, new FileParser.Yaml());
     }
 
@@ -141,7 +140,7 @@ public final class FileSource implements LocalizationSource {
      * @return a new {@link FileSource}; never {@code null}
      */
     @Contract("_ -> new")
-    public static @NotNull FileSource toml(final @NonNull URI directory) {
+    public static @NonNull FileSource toml(final @NonNull URI directory) {
         return new FileSource(directory, new FileParser.Toml());
     }
 
@@ -152,7 +151,7 @@ public final class FileSource implements LocalizationSource {
      * @return a new {@link FileSource}; never {@code null}
      */
     @Contract("_ -> new")
-    public static @NotNull FileSource properties(final @NonNull URI directory) {
+    public static @NonNull FileSource properties(final @NonNull URI directory) {
         return new FileSource(directory, new FileParser.Property());
     }
 

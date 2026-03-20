@@ -17,6 +17,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
 import lombok.NonNull;
 
+import java.util.Properties;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.*;
@@ -40,7 +41,7 @@ import java.util.*;
  * <p>Thread Safety: All built-in implementations are effectively
  * immutable and therefore safe for concurrent use.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @see FileUtils
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
@@ -68,6 +69,7 @@ public interface FileParser {
      *         may be empty
      * @throws Exception if the file cannot be read or the content is
      *                   malformed for this parser's format
+     * @throws NullPointerException if {@code uri} is {@code null}
      */
     @NonNull Map<String, String> parse(@NonNull URI uri) throws Exception;
 
@@ -99,7 +101,7 @@ public interface FileParser {
      * then flattens all top-level values to strings. Only flat
      * (non-nested) JSON objects are supported.</p>
      *
-     * @since 1.0.0
+     * @since 1.0
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
     final class Json implements FileParser {
@@ -124,6 +126,7 @@ public interface FileParser {
          * @return a flat map of key-value pairs; never {@code null}
          * @throws Exception if the file cannot be read or the JSON is
          *                   malformed
+         * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
         public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {
@@ -138,7 +141,7 @@ public interface FileParser {
      * <p>Uses Jackson's {@link YAMLMapper} to parse the file content.
      * Only flat (non-nested) YAML mappings are supported.</p>
      *
-     * @since 1.0.0
+     * @since 1.0
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
     final class Yaml implements FileParser {
@@ -163,6 +166,7 @@ public interface FileParser {
          * @return a flat map of key-value pairs; never {@code null}
          * @throws Exception if the file cannot be read or the YAML is
          *                   malformed
+         * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
         public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {
@@ -177,7 +181,7 @@ public interface FileParser {
      * <p>Uses Jackson's {@link TomlMapper} to parse the file content.
      * Only flat (non-nested) TOML tables are supported.</p>
      *
-     * @since 1.0.0
+     * @since 1.0
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
     final class Toml implements FileParser {
@@ -202,6 +206,7 @@ public interface FileParser {
          * @return a flat map of key-value pairs; never {@code null}
          * @throws Exception if the file cannot be read or the TOML is
          *                   malformed
+         * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
         public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {
@@ -213,11 +218,11 @@ public interface FileParser {
     /**
      * {@link FileParser} implementation for Java {@code .properties} files.
      *
-     * <p>Uses {@link java.util.Properties} to parse the file content.
+     * <p>Uses {@link Properties} to parse the file content.
      * All string property names and values are returned as-is without
      * any transformation.</p>
      *
-     * @since 1.0.0
+     * @since 1.0
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
     final class Property implements FileParser {
@@ -239,6 +244,7 @@ public interface FileParser {
          *            must not be {@code null}
          * @return a map of key-value pairs; never {@code null}
          * @throws Exception if the file cannot be read or is malformed
+         * @throws NullPointerException if {@code uri} is {@code null}
          */
         @Override
         public @NonNull Map<String, String> parse(final @NonNull URI uri) throws Exception {

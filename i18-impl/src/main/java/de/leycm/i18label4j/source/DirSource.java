@@ -48,7 +48,7 @@ import java.util.*;
  * <p>Thread Safety: Instances are effectively immutable after construction
  * and may be shared across threads safely.</p>
  *
- * @since 1.0.0
+ * @since 1.0
  * @see LocalizationSource
  * @see FileSource
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
