@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class FileUtils {
 
@@ -82,9 +83,11 @@ public final class FileUtils {
                 if (!Files.isDirectory(dirPath)) {
                     throw new IllegalArgumentException("Resource is a file, not a directory: " + uri);
                 }
-                return Files.list(dirPath)
-                        .map(p -> createResourceUri(path + "/" + p.getFileName()))
-                        .collect(Collectors.toSet());
+                try (Stream<Path> paths = Files.list(dirPath)) {
+                    return paths
+                            .map(p -> createResourceUri(path + "/" + p.getFileName()))
+                            .collect(Collectors.toSet());
+                }
 
             } else if ("jar".equals(url.getProtocol())) {
                 String jarPath = url.getPath().substring(5, url.getPath().indexOf("!"));
@@ -133,9 +136,10 @@ public final class FileUtils {
         }
 
         try {
-            return Files.list(path)
-                    .map(Path::toUri)
-                    .collect(Collectors.toSet());
+            try (Stream<Path> paths = Files.list(path)) {
+                return paths.map(Path::toUri)
+                        .collect(Collectors.toSet());
+            }
         } catch (IOException e) {
             throw new RuntimeException("Failed to list directory: " + uri, e);
         }
