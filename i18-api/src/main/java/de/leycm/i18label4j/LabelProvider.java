@@ -48,7 +48,7 @@ import java.util.function.Function;
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
 public interface LabelProvider extends Instanceable {
-
+    
     /**
      * Returns the singleton instance of the {@link LabelProvider}.
      *
@@ -86,10 +86,12 @@ public interface LabelProvider extends Instanceable {
      *                                  cannot be loaded from the source
      */
     default void warmUp(final @NonNull Locale @NonNull ... localizations) {
-        for (Locale locale : localizations) {
-            // note: using the key "__warmup__" to cache the actual translations there still can be a translation called "__warmup__".
-            translate(locale, "__warmup__", "__warmup__");
-        }
+    // note: using the key "__warmup__" to cache translations, translation can still be called "__warmup__".
+    final String warmupKey = "__warmup__";
+
+    for (Locale locale : localizations) {
+        translate(locale, warmupKey, warmupKey);
+    }
     }
 
     // ==== Configuration ====================================================
