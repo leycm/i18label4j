@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Contract;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -189,9 +190,9 @@ public class CommonLabelProvider implements LabelProvider {
     // ==== Instance State ===================================================
 
     // locale language-tag -> (translation key -> LocalizedResult)
-    private final Map<String, Map<String, LocalizedResult>> translationCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ConcurrentHashMap<String, LocalizedResult>> translationCache = new ConcurrentHashMap<>();
     // target class -> serializer
-    private final Map<Class<?>, LabelSerializer<?>> serializerRegistry = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<?>, LabelSerializer<?>> serializerRegistry = new ConcurrentHashMap<>();
 
     private final @NonNull LocalizationSource localizationSource;
     private final @NonNull MappingRule defaultMappingRule;
@@ -330,13 +331,17 @@ public class CommonLabelProvider implements LabelProvider {
                                               final @NonNull String key)
             throws NullPointerException, IllegalArgumentException {
 
-        Map<String, LocalizedResult> localeMap = loadLocaleMap(locale);
+        final Map<String, LocalizedResult> localeMap = loadLocaleMap(locale);
 
-        return localeMap.computeIfAbsent(key, k -> {
-            if (getDefaultLocale().equals(locale))
-                return new LocalizedResult(locale, null);
-            return translate(getDefaultLocale(), key);
-        });
+        final LocalizedResult existing = localeMap.get(key);
+        if (existing != null) return existing;
+
+        final LocalizedResult fallback = getDefaultLocale().equals(locale)
+                ? new LocalizedResult(locale, null)
+                : translate(getDefaultLocale(), key);
+
+        // note: race window between the get() above and computeIfAbsent() is harmless
+        return localeMap.computeIfAbsent(key, k -> fallback);
     }
 
     /**
@@ -360,18 +365,20 @@ public class CommonLabelProvider implements LabelProvider {
      *                                  original cause as a chained exception
      */
     @ApiStatus.Internal
-    public @NonNull Map<String, LocalizedResult> loadLocaleMap(final @NonNull Locale locale)
+    public @NonNull ConcurrentMap<String, LocalizedResult> loadLocaleMap(final @NonNull Locale locale)
             throws NullPointerException, IllegalArgumentException {
 
         AtomicReference<IllegalArgumentException> loadException = new AtomicReference<>();
 
-        final Map<String, LocalizedResult> localMap = translationCache.computeIfAbsent(locale.toLanguageTag(), tag -> {
+        final ConcurrentMap<String, LocalizedResult> localMap = translationCache.computeIfAbsent(locale.toLanguageTag(), tag -> {
             try {
                 return localizationSource.getLocalization(locale)
                         .entrySet()
                         .stream()
                         .collect(Collectors.toConcurrentMap(Map.Entry::getKey,
-                                e -> new LocalizedResult(locale, e.getValue())));
+                                e -> new LocalizedResult(locale, e.getValue()),
+                                (a, b) -> a,
+                                ConcurrentHashMap::new));
 
             } catch (Exception e) {
                 loadException.set(new IllegalArgumentException(
