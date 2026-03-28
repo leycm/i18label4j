@@ -18,6 +18,8 @@ import de.leycm.i18label4j.exception.SerializationException;
 
 import lombok.NonNull;
 
+import java.util.Locale;
+
 /**
  * Strategy interface for converting {@link Label} instances to and from
  * a specific target type {@code T}.
@@ -47,7 +49,7 @@ public interface LabelSerializer<T> {
      * Converts a {@link Label} into the target type {@code T}.
      *
      * <p>Implementations typically resolve the label's text (e.g. via
-     * {@link Label#in()} or {@link Label#mapped()}) and then transform
+     * {@link Label#rawOf(Locale)} or {@link Label#resolve()}) and then transform
      * it into the target representation.</p>
      *
      * @param label the label to serialize; must not be {@code null}
@@ -67,6 +69,7 @@ public interface LabelSerializer<T> {
      * the serialized form.</p>
      *
      * @param serialized the serialized representation; must not be {@code null}
+     * @param provider the label provider; must not be {@code null}
      * @return the reconstructed label; never {@code null}
      * @throws DeserializationException if the value cannot be interpreted
      *                                  as a valid label (e.g. corrupt data,

@@ -50,6 +50,7 @@ import java.util.function.Supplier;
 public interface Label {
 
     // ==== Factory Methods ===================================================
+
     /**
      * Creates a translatable label for the given key using the default {@link LabelProvider}.
      *

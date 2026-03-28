@@ -114,7 +114,7 @@ public interface LabelProvider extends Instanceable {
 
     /**
      * Returns the default {@link MappingRule} used for placeholder
-     * substitution when calling {@link Label#mapped()}.
+     * substitution when calling {@link Label#resolve()}.
      *
      * @return the default mapping rule; never {@code null}
      */
@@ -125,7 +125,7 @@ public interface LabelProvider extends Instanceable {
     /**
      * Creates a new locale-aware {@link Label} backed by a translation key.
      *
-     * <p>When resolved via {@link Label#in(Locale)}, the label performs a
+     * <p>When resolved via {@link Label#rawOf(Locale)}, the label performs a
      * translation lookup for the given key. If no translation is found for
      * the requested locale or the default locale, the {@code fallback}
      * function is invoked with the requested locale to produce the result.</p>

@@ -21,7 +21,7 @@ import lombok.NonNull;
  * {@link Label}.
  *
  * <p>This exception is raised by
- * {@link LabelSerializer#deserialize(Object)}
+ * {@link LabelSerializer#deserialize(Object, LabelProvider)}
  * and propagated through
  * {@link LabelProvider#deserialize(Object)} when the
  * input data is corrupt, has an unrecognized format, or cannot be mapped
