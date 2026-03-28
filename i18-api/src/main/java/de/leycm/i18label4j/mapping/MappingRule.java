@@ -217,6 +217,20 @@ public class MappingRule {
                     continue;
                 }
                 keyEnd = suffixPos;
+
+                // note: validate key characters skip replace if any char is illegal
+                boolean validKey = true;
+                for (int k = keyStart; k < keyEnd; k++) {
+                    if (!isKeyChar(input.charAt(k))) {
+                        validKey = false;
+                        break;
+                    }
+                }
+
+                if (!validKey) {
+                    sb.append(input.charAt(i++));
+                    continue;
+                }
             } else {
                 // no suffix: key extends to last consecutive valid key character
                 while (keyEnd < len && isKeyChar(input.charAt(keyEnd))) keyEnd++;
