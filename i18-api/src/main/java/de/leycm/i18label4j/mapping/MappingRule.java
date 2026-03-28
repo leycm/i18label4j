@@ -84,10 +84,12 @@ public class MappingRule {
 
     // ==== Internal Constants ================================================
 
-    // Maximum allowed input length (1 MB) passed to apply()
+    // maximum allowed input length (1 MB) passed to apply()
     private static final int INPUT_LIMIT = 1_000_000;
-    // Maximum number of substitutions performed in a single apply() call
-    private static final int MAX_MATCHES = 10_000;
+    // maximum number of substitutions performed in a single apply() call
+    private static final int PLACEHOLDER_LIMIT = 10_000;
+    // maximum allowed prefix and suffix length
+    private static final int PREFIX_LIMIT = 5;
 
     private final @NonNull String prefix;
     private final @NonNull String suffix;
@@ -106,6 +108,9 @@ public class MappingRule {
      * @param prefix the opening delimiter; must not be {@code null}
      * @param suffix the closing delimiter; must not be {@code null},
      *               may be empty to indicate an open-ended token boundary
+     * @throws IllegalArgumentException if {@code prefix} is empty
+     * @throws IllegalArgumentException if a prefix or suffix exceeds
+     *                                  {@link #PREFIX_LIMIT} characters
      * @throws NullPointerException if {@code prefix} or {@code suffix}
      *                              is {@code null}
      */
@@ -113,6 +118,18 @@ public class MappingRule {
         this.prefix    = prefix;
         this.suffix    = suffix;
         this.hasSuffix = !suffix.isEmpty();
+
+        if (prefix.isEmpty()) {
+            throw new IllegalArgumentException("prefix must not be empty");
+        }
+
+        if (prefix.length() > PREFIX_LIMIT) {
+            throw new IllegalArgumentException("prefix must not exceed " + PREFIX_LIMIT + " characters");
+        }
+
+        if (suffix.length() > PREFIX_LIMIT) {
+            throw new IllegalArgumentException("suffix must not exceed " + PREFIX_LIMIT + " characters");
+        }
     }
 
     /**
@@ -145,20 +162,33 @@ public class MappingRule {
      *         {@code input} unchanged when no tokens are found or
      *         {@code mappings} is empty.
      * @throws IllegalArgumentException if {@code input} exceeds
-     *                                  {@code 1 000 000} characters
+     *                                  {@link #INPUT_LIMIT} characters
+     * @throws IllegalArgumentException if more than {@link #PLACEHOLDER_LIMIT}
+     *                                  placeholder registered
      * @throws NullPointerException     if {@code input} or {@code mappings}
      *                                  is {@code null}
      */
     public @NonNull String apply(final @NonNull String input,
                                  final @NonNull Set<Mapping> mappings) {
         if (input.isEmpty() || mappings.isEmpty()) return input;
-        if (!input.contains(prefix))               return input;
+
+        if (input.length() > INPUT_LIMIT) {
+            throw new IllegalArgumentException("input exceeds maximum length of " + INPUT_LIMIT);
+        }
+
+        if (!input.contains(prefix)) return input;
+
 
         final Map<String, String> lookup = buildLookup(mappings);
         final int   len    = input.length();
         final int   pLen   = prefix.length();
         final int   sLen   = suffix.length();
         final StringBuilder sb = new StringBuilder(len + 32);
+
+        if (lookup.size() > PLACEHOLDER_LIMIT) {
+            throw new IllegalArgumentException("too many mappings: " + lookup.size() +
+                    " (maximum allowed is " + PLACEHOLDER_LIMIT + ")");
+        }
 
         int i = 0;
         while (i < len) {
