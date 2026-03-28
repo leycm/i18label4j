@@ -170,12 +170,8 @@ public class MappingRule {
      */
     public @NonNull String apply(final @NonNull String input,
                                  final @NonNull Set<Mapping> mappings) {
+        if (input.length() > INPUT_LIMIT) throw new IllegalArgumentException("Input too large " + INPUT_LIMIT);
         if (input.isEmpty() || mappings.isEmpty()) return input;
-
-        if (input.length() > INPUT_LIMIT) {
-            throw new IllegalArgumentException("input exceeds maximum length of " + INPUT_LIMIT);
-        }
-
         if (!input.contains(prefix)) return input;
 
 
