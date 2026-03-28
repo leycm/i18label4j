@@ -14,15 +14,14 @@ import de.leycm.i18label4j.exception.DeserializationException;
 import de.leycm.i18label4j.exception.FormatException;
 import de.leycm.i18label4j.exception.SerializationException;
 import de.leycm.i18label4j.mapping.MappingRule;
-import de.leycm.i18label4j.serializer.Localization;
 import de.leycm.i18label4j.serializer.LabelSerializer;
 import de.leycm.i18label4j.source.LocalizationSource;
 import de.leycm.init4j.instance.Instanceable;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
-import java.util.function.Function;
 
 /**
  * Central access point for creating and managing {@link Label} instances.
@@ -136,8 +135,7 @@ public interface LabelProvider extends Instanceable {
      *                 translation is found; must not be {@code null}
      * @return a new locale-aware label; never {@code null}
      */
-    @NonNull Label createI18Label(@NonNull String key,
-                                  @NonNull Function<Locale, String> fallback);
+    @NonNull Label createI18Label(@NonNull String key, @Nullable String fallback);
 
     /**
      * Creates a new literal {@link Label} whose text never changes

@@ -16,12 +16,11 @@ import de.leycm.i18label4j.serializer.LabelSerializer;
 import de.leycm.i18label4j.exception.SerializationException;
 import de.leycm.i18label4j.exception.FormatException;
 
-import de.leycm.i18label4j.serializer.Localization;
 import lombok.NonNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -34,12 +33,12 @@ import java.util.function.Supplier;
  *
  * <p>Labels support placeholder substitution via {@link Mapping} objects.
  * Mappings are applied by the {@link LabelProvider}'s default
- * {@link MappingRule} when {@link #mapped()}
+ * {@link MappingRule} when {@link #resolve()}
  * or its overloads are called. The raw, un-substituted text is returned
- * by {@link #in(Locale)}.</p>
+ * by {@link #rawOf(Locale)}.</p>
  *
  * <p>Thread Safety: Implementations are not required to be thread-safe.
- * The mutable mapping state added via {@link #mapTo} should only be
+ * The mutable mapping state added via {@link #map} should only be
  * modified from a single thread unless the implementation documents
  * otherwise.</p>
  *
@@ -55,7 +54,7 @@ public interface Label {
      * Creates a translatable label for the given key using the default {@link LabelProvider}.
      *
      * <p>When no translation is found for the current locale, the provider's default
-     * fallback strategy is applied (see {@link LabelProvider#createI18Label(String, Function)}).</p>
+     * fallback strategy is applied (see {@link LabelProvider#createI18Label(String, String)}).</p>
      *
      * @param key the translation key; must not be {@code null}
      * @return a translatable label; never {@code null}
@@ -80,21 +79,6 @@ public interface Label {
     }
 
     /**
-     * Creates a translatable label for the given key using the default {@link LabelProvider},
-     * with a locale-aware function used as the fallback when no translation is available.
-     *
-     * @param key      the translation key; must not be {@code null}
-     * @param fallback a function that receives the requested {@link Locale} and returns
-     *                 the fallback text; must not be {@code null}
-     * @return a translatable label; never {@code null}
-     * @throws NullPointerException if {@code key} or {@code fallback} is {@code null}
-     */
-    static @NonNull Label of(final @NonNull String key,
-                             final @NonNull Function<Locale, String> fallback) {
-        return of(LabelProvider.getInstance(), key, fallback);
-    }
-
-    /**
      * Creates a translatable label for the given key using the specified {@link LabelProvider}.
      *
      * <p>The provider's default fallback strategy is applied when no translation is found.</p>
@@ -106,7 +90,7 @@ public interface Label {
      */
     static @NonNull Label of(final @NonNull LabelProvider provider,
                              final @NonNull String key) {
-        return provider.createI18Label(key, locale -> locale.toLanguageTag() + "." + key);
+        return provider.createI18Label(key, null);
     }
 
     /**
@@ -121,24 +105,7 @@ public interface Label {
      */
     static @NonNull Label of(final @NonNull LabelProvider provider,
                              final @NonNull String key,
-                             final @NonNull String fallback) {
-        return provider.createI18Label(key, locale -> fallback);
-    }
-
-    /**
-     * Creates a translatable label for the given key using the specified {@link LabelProvider},
-     * with a locale-aware function used as the fallback when no translation is available.
-     *
-     * @param provider the provider responsible for translation lookup; must not be {@code null}
-     * @param key      the translation key; must not be {@code null}
-     * @param fallback a function that receives the requested {@link Locale} and returns
-     *                 the fallback text; must not be {@code null}
-     * @return a translatable label; never {@code null}
-     * @throws NullPointerException if {@code provider}, {@code key}, or {@code fallback} is {@code null}
-     */
-    static @NonNull Label of(final @NonNull LabelProvider provider,
-                             final @NonNull String key,
-                             final @NonNull Function<Locale, String> fallback) {
+                             final @Nullable String fallback) {
         return provider.createI18Label(key, fallback);
     }
 
@@ -194,7 +161,7 @@ public interface Label {
     /**
      * Registers a static placeholder mapping on this label.
      *
-     * <p>Delegates to {@link #mapTo(String, Supplier)} by wrapping
+     * <p>Delegates to {@link #map(String, Supplier)} by wrapping
      * {@code value} in a constant {@link Supplier}. The key must not
      * already be registered on this label.</p>
      *
@@ -206,17 +173,17 @@ public interface Label {
      * @throws NullPointerException     if {@code key} or {@code value}
      *                                  is {@code null}
      */
-    default @NonNull Label mapTo(final @NonNull String key,
+    default @NonNull Label map(final @NonNull String key,
                                  final @NonNull Object value) throws IllegalArgumentException {
-        return mapTo(key, () -> value);
+        return map(key, () -> value);
     }
 
     /**
      * Registers a dynamic placeholder mapping on this label.
      *
-     * <p>Delegates to {@link #mapTo(Mapping)} by creating a new
+     * <p>Delegates to {@link #map(Mapping)} by creating a new
      * {@link Mapping} from the provided key and supplier. The supplier
-     * is evaluated lazily each time {@link #mapped()} is called.</p>
+     * is evaluated lazily each time {@link #resolve()} is called.</p>
      *
      * @param key      the placeholder key; must not be {@code null}
      * @param supplier the value supplier evaluated at mapping time;
@@ -227,9 +194,9 @@ public interface Label {
      * @throws NullPointerException     if {@code key} or {@code supplier}
      *                                  is {@code null}
      */
-    default @NonNull Label mapTo(final @NonNull String key,
+    default @NonNull Label map(final @NonNull String key,
                                  final @NonNull Supplier<Object> supplier) throws IllegalArgumentException {
-        return mapTo(new Mapping(key, supplier));
+        return map(new Mapping(key, supplier));
     }
 
     /**
@@ -245,71 +212,7 @@ public interface Label {
      *                                  already exists on this label
      * @throws NullPointerException     if {@code mapping} is {@code null}
      */
-    @NonNull Label mapTo(final @NonNull Mapping mapping) throws IllegalArgumentException;
-
-    // ==== Raw Resolution ====================================================
-
-    /**
-     * Resolves this label using the provider's default {@link Locale},
-     * without applying any placeholder substitutions.
-     *
-     * @return the raw resolved string; never {@code null}
-     */
-    default @NonNull String in() {
-        return in(getProvider().getDefaultLocale());
-    }
-
-    /**
-     * Resolves this label using the provider's default {@link Locale}
-     * and formats the result into the requested type {@code T}.
-     *
-     * <p>Delegates to {@link LabelProvider#format(String, Class)} after
-     * resolving the text via {@link #in()}.</p>
-     *
-     * @param <T>  the target type
-     * @param type the class of the target type; must not be {@code null}
-     * @return the formatted value; never {@code null}
-     * @throws FormatException if no
-     *         serializer is registered for {@code type}, or if conversion fails
-     * @throws IllegalArgumentException if {@code type} is not a supported
-     *         serialization target
-     */
-    default <T> @NonNull T in(final @NonNull Class<T> type) {
-        return in(getProvider().getDefaultLocale(), type);
-    }
-
-    /**
-     * Resolves this label for the given {@link Locale} and formats
-     * the result into the requested type {@code T}.
-     *
-     * <p>Delegates to {@link LabelProvider#format(String, Class)} after
-     * resolving the text via {@link #in(Locale)}.</p>
-     *
-     * @param <T>    the target type
-     * @param locale the locale to resolve for; must not be {@code null}
-     * @param type   the class of the target type; must not be {@code null}
-     * @return the formatted value; never {@code null}
-     * @throws FormatException if no
-     *         serializer is registered for {@code type}, or if conversion fails
-     * @throws IllegalArgumentException if {@code type} is not a supported
-     *         serialization target
-     */
-    default <T> @NonNull T in(@NonNull Locale locale, final @NonNull Class<T> type) {
-        return getProvider().format(in(locale), type);
-    }
-
-    /**
-     * Resolves this label for the given {@link Locale} without applying
-     * any placeholder substitutions.
-     *
-     * <p>For locale-aware labels this performs a translation lookup via
-     * the {@link LabelProvider}. For literal labels this simply returns
-     * the fixed literal string regardless of the locale.</p>
-     *
-     * @param locale the locale to resolve for; must not be {@code null}
-     * @return the raw resolved string; never {@code null}
-     */
-    @NonNull String in(@NonNull Locale locale);
+    @NonNull Label map(final @NonNull Mapping mapping) throws IllegalArgumentException;
 
 
     // ==== Mapped Resolution =================================================
@@ -322,8 +225,8 @@ public interface Label {
      * @throws IllegalArgumentException if the resolved text exceeds
      *         the mapping engine's input size limit
      */
-    default @NonNull String mapped() {
-        return mapped(getProvider().getDefaultLocale());
+    default @NonNull String resolve() {
+        return resolve(getProvider().getDefaultLocale());
     }
 
     /**
@@ -339,8 +242,8 @@ public interface Label {
      * @throws IllegalArgumentException if {@code type} is not supported
      *         or the text exceeds the mapping engine's input size limit
      */
-    default <T> @NonNull T mapped(final @NonNull Class<T> type) {
-        return mapped(getProvider().getDefaultLocale(), type);
+    default <T> @NonNull T resolve(final @NonNull Class<T> type) {
+        return resolve(getProvider().getDefaultLocale(), type);
     }
 
     /**
@@ -356,8 +259,8 @@ public interface Label {
      * @throws IllegalArgumentException if {@code type} is not supported
      *         or the text exceeds the mapping engine's input size limit
      */
-    default <T> @NonNull T mapped(final @NonNull Locale locale, final @NonNull Class<T> type) {
-        return getProvider().format(mapped(locale), type);
+    default <T> @NonNull T resolve(final @NonNull Locale locale, final @NonNull Class<T> type) {
+        return getProvider().format(resolve(locale), type);
     }
 
     /**
@@ -369,9 +272,62 @@ public interface Label {
      * @throws IllegalArgumentException if the resolved text exceeds
      *         the mapping engine's input size limit
      */
-    default @NonNull String mapped(@NonNull Locale locale) {
-        return getProvider().getDefaultMappingRule().apply(in(locale), getMappings());
+    default @NonNull String resolve(@NonNull Locale locale) {
+        return getProvider().getDefaultMappingRule().apply(rawOf(locale), getMappings());
     }
+
+    // ==== Localized Resolution ==============================================
+
+    /**
+     * Resolves this label using the provider's default {@link Locale},
+     * without applying any placeholder substitutions.
+     *
+     * @return the raw resolved entry; never {@code null}
+     */
+    default @NonNull Localization localizationOfDefault() {
+        return localizationOf(getProvider().getDefaultLocale());
+    }
+
+
+    /**
+     * Resolves this label for the given {@link Locale} without applying
+     * any placeholder substitutions.
+     *
+     * <p>For locale-aware labels this performs a translation lookup via
+     * the {@link LabelProvider}. For literal labels this simply returns
+     * the fixed {@link Localization} regardless of the locale.</p>
+     *
+     * @param locale the locale to resolve for; must not be {@code null}
+     * @return the raw resolved entry; never {@code null}
+     */
+    @NonNull Localization localizationOf(@NonNull Locale locale);
+
+    // ==== Raw Resolution ====================================================
+
+    /**
+     * Resolves this label using the provider's default {@link Locale},
+     * without applying any placeholder substitutions.
+     *
+     * @return the raw resolved string; never {@code null}
+     */
+    default @NonNull String rawOfDefault() {
+        return rawOf(getProvider().getDefaultLocale());
+    }
+
+    /**
+     * Resolves this label for the given {@link Locale} without applying
+     * any placeholder substitutions.
+     *
+     * <p>For locale-aware labels this performs a translation lookup via
+     * the {@link LabelProvider}. For literal labels this simply returns
+     * the fixed literal string regardless of the locale.</p>
+     *
+     * @param locale the locale to resolve for; must not be {@code null}
+     * @return the raw resolved string; never {@code null}
+     */
+    @NonNull String rawOf(@NonNull Locale locale);
+
+
 
     // ==== Serialization ====================================================
 
@@ -389,32 +345,6 @@ public interface Label {
     default <T> @NonNull T serialize(Class<T> type) {
         return getProvider().serialize(this, type);
     }
-
-    // ==== Localized Resolution ==============================================
-
-    /**
-     * Resolves this label using the provider's default {@link Locale},
-     * without applying any placeholder substitutions.
-     *
-     * @return the raw resolved entry; never {@code null}
-     */
-    default @NonNull Localization localized() {
-        return localized(getProvider().getDefaultLocale());
-    }
-
-
-    /**
-     * Resolves this label for the given {@link Locale} without applying
-     * any placeholder substitutions.
-     *
-     * <p>For locale-aware labels this performs a translation lookup via
-     * the {@link LabelProvider}. For literal labels this simply returns
-     * the fixed {@link Localization} regardless of the locale.</p>
-     *
-     * @param locale the locale to resolve for; must not be {@code null}
-     * @return the raw resolved entry; never {@code null}
-     */
-    @NonNull Localization localized(@NonNull Locale locale);
 
     // ==== Object Methods ===================================================
 

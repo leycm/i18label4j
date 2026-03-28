@@ -15,9 +15,10 @@ import de.leycm.i18label4j.LabelProvider;
 import de.leycm.i18label4j.mapping.Mapping;
 import de.leycm.i18label4j.mapping.MappingRule;
 
-import de.leycm.i18label4j.serializer.Localization;
+import de.leycm.i18label4j.Localization;
 import lombok.NonNull;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,15 +31,14 @@ import java.util.function.Function;
  * <p>{@link LocaleLabel} holds a translation key and a fallback
  * {@link Function} that is invoked when no translation can be found for
  * the requested {@link Locale} or the provider's default locale. Each
- * call to {@link #in(Locale)} delegates to
+ * call to {@link #rawOf(Locale)} delegates to
  * {@link LabelProvider#translate(Locale, String, String)}, meaning the
  * provider's internal cache and locale-fallback logic apply
  * transparently.</p>
  *
  * <p>Placeholder {@link Mapping} objects may be registered on the label
- * and are applied by the default
- * {@link MappingRule} when
- * {@link #mapped(Locale)} is called.</p>
+ * and are applied by the default {@link MappingRule} when
+ * {@link #resolve()} is called.</p>
  *
  * <p>Equality is based on the combination of owning provider and
  * translation key, so two locale labels with the same key and provider
@@ -50,20 +50,20 @@ import java.util.function.Function;
  *
  * @since 1.0
  * @see Label
- * @see LabelProvider#createI18Label(String, Function)
+ * @see LabelProvider#createI18Label(String, String)
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
 @SuppressWarnings("ClassCanBeRecord") // cause: mutable mappings
 public class LocaleLabel implements Label {
 
     // the owning label provider
-    private final @NonNull LabelProvider provider;
+    private final LabelProvider provider;
     // the set of placeholder mappings
-    private final @NonNull Set<Mapping> mappings;
+    private final Set<Mapping> mappings;
     // the translation key for lookups
-    private final @NonNull String key;
+    private final String key;
     // the fallback function for missing translations
-    private final @NonNull Function<Locale, String> fallback;
+    private final @Nullable String fallback;
 
     /**
      * Constructs a new {@link LocaleLabel} with an empty mapping set.
@@ -75,7 +75,7 @@ public class LocaleLabel implements Label {
      */
     public LocaleLabel(final @NonNull LabelProvider provider,
                        final @NonNull String key,
-                       final @NonNull Function<Locale, String> fallback) {
+                       final @Nullable String fallback) {
         this(provider, ConcurrentHashMap.newKeySet(), key, fallback);
     }
 
@@ -95,7 +95,7 @@ public class LocaleLabel implements Label {
     public LocaleLabel(final @NonNull LabelProvider provider,
                        final @NonNull Set<Mapping> mappings,
                        final @NonNull String key,
-                       final @NonNull Function<Locale, String> fallback) {
+                       final @Nullable String fallback) {
         // note: using a concurrent set to be thread-safe
         final Set<Mapping> set = ConcurrentHashMap.newKeySet();
         set.addAll(mappings);
@@ -144,8 +144,8 @@ public class LocaleLabel implements Label {
      *
      * @return the fallback value for the default Local; never {@code null}
      */
-    public @NonNull String getFallback() {
-        return fallback.apply(provider.getDefaultLocale());
+    public @Nullable String getFallback() {
+        return fallback;
     }
 
     // ==== Mapping Registration ===============================================
@@ -160,7 +160,7 @@ public class LocaleLabel implements Label {
      * @throws NullPointerException     if {@code mapping} is {@code null}
      */
     @Override
-    public @NonNull Label mapTo(final @NonNull Mapping mapping) throws IllegalArgumentException {
+    public @NonNull Label map(final @NonNull Mapping mapping) throws IllegalArgumentException {
         if (mappings.contains(mapping))
             throw new IllegalArgumentException(
                     "Mapping with key \"" + mapping.key() + "\" already exists for this label.");
@@ -186,12 +186,12 @@ public class LocaleLabel implements Label {
      *                                  cannot be loaded from the source
      */
     @Override
-    public @NonNull String in(final @NonNull Locale locale) {
-        return localized().or(fallback.apply(locale));
+    public @NonNull String rawOf(final @NonNull Locale locale) {
+        return localizationOfDefault().or(fallback != null ? fallback : key);
     }
 
     @Override
-    public @NonNull Localization localized(@NonNull Locale locale) {
+    public @NonNull Localization localizationOf(@NonNull Locale locale) {
         return provider.translate(locale, key);
     }
 

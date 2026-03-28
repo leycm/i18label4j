@@ -32,9 +32,7 @@ public interface AdventureSerializer extends LabelSerializer<Component> {
     @Override
     default @NonNull Label deserialize(final @NonNull Component serialized, final @NonNull LabelProvider provider) throws DeserializationException {
         if (serialized instanceof TranslatableComponent translatable) {
-            final String fallback = translatable.fallback();
-            if (fallback == null) return Label.of(provider, translatable.key());
-            return Label.of(provider, translatable.key(), fallback);
+            return Label.of(provider, translatable.key(), translatable.fallback());
         } else {
             return Label.literal(provider, toLiteral(serialized));
         }

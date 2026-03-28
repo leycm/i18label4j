@@ -8,9 +8,8 @@
  * Copyright 2026 (c) leycm <leycm@proton.me>
  * Copyright 2026 (c) maintainers
  */
-package de.leycm.i18label4j.serializer;
+package de.leycm.i18label4j;
 
-import de.leycm.i18label4j.LabelProvider;
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -14,8 +14,8 @@ import de.leycm.i18label4j.Label;
 import de.leycm.i18label4j.LabelProvider;
 import de.leycm.i18label4j.mapping.Mapping;
 import de.leycm.i18label4j.mapping.MappingRule;
+import de.leycm.i18label4j.Localization;
 
-import de.leycm.i18label4j.serializer.Localization;
 import lombok.NonNull;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p>Placeholder {@link Mapping} objects can still be registered and are
  * applied by the default {@link MappingRule}
- * when {@link #mapped()} is called, allowing dynamic value substitution
+ * when {@link #resolve()} is called, allowing dynamic value substitution
  * even in non-localized labels.</p>
  *
  * <p>Thread Safety: This class is not thread-safe. The mutable
@@ -131,7 +131,7 @@ public class LiteralLabel implements Label {
      * @throws NullPointerException     if {@code mapping} is {@code null}
      */
     @Override
-    public @NonNull Label mapTo(final @NonNull Mapping mapping) throws IllegalArgumentException {
+    public @NonNull Label map(final @NonNull Mapping mapping) throws IllegalArgumentException {
         if (mappings.contains(mapping))
             throw new IllegalArgumentException(
                     "Mapping with key \"" + mapping.key() + "\" already exists for this label.");
@@ -148,12 +148,12 @@ public class LiteralLabel implements Label {
      * @return the literal string; never {@code null}
      */
     @Override
-    public @NonNull String in(final @NonNull Locale locale) {
+    public @NonNull String rawOf(final @NonNull Locale locale) {
         return literal;
     }
 
     @Override
-    public @NonNull Localization localized(@NonNull Locale locale) {
+    public @NonNull Localization localizationOf(@NonNull Locale locale) {
         return new Localization(locale, literal);
     }
 

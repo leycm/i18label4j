@@ -17,20 +17,19 @@ import de.leycm.i18label4j.exception.SerializationException;
 import de.leycm.i18label4j.label.LiteralLabel;
 import de.leycm.i18label4j.label.LocaleLabel;
 import de.leycm.i18label4j.mapping.MappingRule;
-import de.leycm.i18label4j.serializer.Localization;
 import de.leycm.i18label4j.serializer.LabelSerializer;
 import de.leycm.i18label4j.source.LocalizationSource;
 
 import lombok.NonNull;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -270,7 +269,7 @@ public class CommonLabelProvider implements LabelProvider {
     @Override
     public @NonNull Label createI18Label(
             final @NonNull String key,
-            final @NonNull Function<Locale, String> fallback) {
+            final @Nullable String fallback) {
         return new LocaleLabel(this, key, fallback);
     }
 
