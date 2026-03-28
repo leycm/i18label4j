@@ -8,8 +8,9 @@
  * Copyright 2026 (c) leycm <leycm@proton.me>
  * Copyright 2026 (c) maintainers
  */
-package de.leycm.i18label4j;
+package de.leycm.i18label4j.serializer;
 
+import de.leycm.i18label4j.LabelProvider;
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,13 +19,13 @@ import java.util.Locale;
 /**
  * Immutable record wrapping the outcome of a single translation lookup.
  *
- * <p>A {@link LocalizedResult} holds either a translated string value
+ * <p>A {@link Localization} holds either a translated string value
  * or {@code null} when no translation was found for the requested key
  * and locale. The {@link #or(String)} method provides a convenient
  * way to unwrap the result with a fallback value in one step.</p>
  *
  * <p>Instances of this record are stored in the translation cache of
- * {@link CommonLabelProvider} and are therefore shared across threads.
+ * {@link LabelProvider} and are therefore shared across threads.
  * Being a record with only immutable fields, this class is inherently
  * thread-safe.</p>
  *
@@ -32,14 +33,14 @@ import java.util.Locale;
  * @param localized the translated string, or {@code null} when no
  *                  translation was found
  *
- * @since 1.0
- * @see CommonLabelProvider
+ * @since 1.1
+ * @see LabelProvider
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
-public record LocalizedResult(@NonNull Locale origin, @Nullable String localized) {
+public record Localization(@NonNull Locale origin, @Nullable String localized) {
 
     /**
-     * Constructs a new {@link LocalizedResult} with the specified origin
+     * Constructs a new {@link Localization} with the specified origin
      * locale and localized string.
      *
      * @param origin    the locale for which this translation result was
@@ -48,7 +49,7 @@ public record LocalizedResult(@NonNull Locale origin, @Nullable String localized
      *                  translation was found
      * @throws NullPointerException if {@code origin} is {@code null}
      */
-    public LocalizedResult { }
+    public Localization { }
 
     /**
      * Returns the translated string if present, otherwise returns

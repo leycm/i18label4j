@@ -12,7 +12,7 @@ package de.leycm.i18label4j.exception;
 
 import de.leycm.i18label4j.Label;
 import de.leycm.i18label4j.LabelProvider;
-import de.leycm.i18label4j.serialize.LabelSerializer;
+import de.leycm.i18label4j.serializer.LabelSerializer;
 
 import lombok.NonNull;
 

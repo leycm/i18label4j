@@ -14,7 +14,8 @@ import de.leycm.i18label4j.exception.DeserializationException;
 import de.leycm.i18label4j.exception.FormatException;
 import de.leycm.i18label4j.exception.SerializationException;
 import de.leycm.i18label4j.mapping.MappingRule;
-import de.leycm.i18label4j.serialize.LabelSerializer;
+import de.leycm.i18label4j.serializer.Localization;
+import de.leycm.i18label4j.serializer.LabelSerializer;
 import de.leycm.i18label4j.source.LocalizationSource;
 import de.leycm.init4j.instance.Instanceable;
 
@@ -171,9 +172,27 @@ public interface LabelProvider extends Instanceable {
      * @throws IllegalArgumentException if the locale's translation source
      *                                  fails to load
      */
-    @NonNull String translate(@NonNull Locale locale,
-                              @NonNull String key,
-                              @NonNull String fallback);
+    default @NonNull String translate(final @NonNull Locale locale,
+                                      final @NonNull String key,
+                                      final @NonNull String fallback) {
+            return translate(locale, key).or(fallback);
+    }
+
+    /**
+     * Performs the internal translation lookup, returning a
+     * {@link Localization} that wraps either the found translation.
+     *
+     * @param locale the target locale; must not be {@code null}
+     * @param key    the translation key; must not be {@code null}
+     * @return a {@link Localization} wrapping the translation or
+     *         {@code null}; never {@code null}
+     * @throws NullPointerException     if any parameter is {@code null}
+     * @throws IllegalArgumentException if the locale's translation data
+     *                                  cannot be loaded from the source
+     */
+    @NonNull
+    Localization translate(@NonNull Locale locale,
+                           @NonNull String key);
 
     // ==== Serialization ====================================================
 

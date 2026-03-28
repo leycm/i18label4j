@@ -17,7 +17,8 @@ import de.leycm.i18label4j.exception.SerializationException;
 import de.leycm.i18label4j.label.LiteralLabel;
 import de.leycm.i18label4j.label.LocaleLabel;
 import de.leycm.i18label4j.mapping.MappingRule;
-import de.leycm.i18label4j.serialize.LabelSerializer;
+import de.leycm.i18label4j.serializer.Localization;
+import de.leycm.i18label4j.serializer.LabelSerializer;
 import de.leycm.i18label4j.source.LocalizationSource;
 
 import lombok.NonNull;
@@ -190,7 +191,7 @@ public class CommonLabelProvider implements LabelProvider {
     // ==== Instance State ===================================================
 
     // locale language-tag -> (translation key -> LocalizedResult)
-    private final ConcurrentHashMap<String, ConcurrentHashMap<String, LocalizedResult>> translationCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ConcurrentHashMap<String, Localization>> translationCache = new ConcurrentHashMap<>();
     // target class -> serializer
     private final ConcurrentHashMap<Class<?>, LabelSerializer<?>> serializerRegistry = new ConcurrentHashMap<>();
 
@@ -287,28 +288,8 @@ public class CommonLabelProvider implements LabelProvider {
     // ==== Translation ======================================================
 
     /**
-     * {@inheritDoc}
-     *
-     * @param locale   the target locale; must not be {@code null}
-     * @param key      the translation key; must not be {@code null}
-     * @param fallback the fallback string when no translation is found;
-     *                 must not be {@code null}
-     * @return the translated string or {@code fallback}; never {@code null}
-     * @throws NullPointerException     if any parameter is {@code null}
-     * @throws IllegalArgumentException if the locale's translation source
-     *                                  fails to load
-     */
-    @Override
-    public @NonNull String translate(final @NonNull Locale locale,
-                                     final @NonNull String key,
-                                     final @NonNull String fallback
-    ) throws IllegalArgumentException {
-        return translate(locale, key).or(fallback);
-    }
-
-    /**
      * Performs the internal translation lookup, returning a
-     * {@link LocalizedResult} that wraps either the found translation
+     * {@link Localization} that wraps either the found translation
      * or {@code null} when none exists.
      *
      * <p>The locale's translation map is loaded via
@@ -320,24 +301,24 @@ public class CommonLabelProvider implements LabelProvider {
      *
      * @param locale the target locale; must not be {@code null}
      * @param key    the translation key; must not be {@code null}
-     * @return a {@link LocalizedResult} wrapping the translation or
+     * @return a {@link Localization} wrapping the translation or
      *         {@code null}; never {@code null}
      * @throws NullPointerException     if any parameter is {@code null}
      * @throws IllegalArgumentException if the locale's translation data
      *                                  cannot be loaded from the source
      */
     @ApiStatus.Internal
-    public @NonNull LocalizedResult translate(final @NonNull Locale locale,
-                                              final @NonNull String key)
+    public @NonNull Localization translate(final @NonNull Locale locale,
+                                           final @NonNull String key)
             throws IllegalArgumentException {
 
-        final Map<String, LocalizedResult> localeMap = loadLocaleMap(locale);
+        final Map<String, Localization> localeMap = loadLocaleMap(locale);
 
-        final LocalizedResult existing = localeMap.get(key);
+        final Localization existing = localeMap.get(key);
         if (existing != null) return existing;
 
-        final LocalizedResult fallback = getDefaultLocale().equals(locale)
-                ? new LocalizedResult(locale, null)
+        final Localization fallback = getDefaultLocale().equals(locale)
+                ? new Localization(locale, null)
                 : translate(getDefaultLocale(), key);
 
         // note: race window between the get() above and computeIfAbsent() is harmless
@@ -365,18 +346,18 @@ public class CommonLabelProvider implements LabelProvider {
      *                                  original cause as a chained exception
      */
     @ApiStatus.Internal
-    public @NonNull ConcurrentMap<String, LocalizedResult> loadLocaleMap(final @NonNull Locale locale)
+    public @NonNull ConcurrentMap<String, Localization> loadLocaleMap(final @NonNull Locale locale)
             throws IllegalArgumentException {
 
         AtomicReference<IllegalArgumentException> loadException = new AtomicReference<>();
 
-        final ConcurrentMap<String, LocalizedResult> localMap = translationCache.computeIfAbsent(locale.toLanguageTag(), tag -> {
+        final ConcurrentMap<String, Localization> localMap = translationCache.computeIfAbsent(locale.toLanguageTag(), tag -> {
             try {
                 return localizationSource.getLocalization(locale)
                         .entrySet()
                         .stream()
                         .collect(Collectors.toConcurrentMap(Map.Entry::getKey,
-                                e -> new LocalizedResult(locale, e.getValue()),
+                                e -> new Localization(locale, e.getValue()),
                                 (a, b) -> a,
                                 ConcurrentHashMap::new));
 

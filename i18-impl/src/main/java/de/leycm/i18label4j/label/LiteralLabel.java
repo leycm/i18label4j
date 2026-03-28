@@ -15,6 +15,7 @@ import de.leycm.i18label4j.LabelProvider;
 import de.leycm.i18label4j.mapping.Mapping;
 import de.leycm.i18label4j.mapping.MappingRule;
 
+import de.leycm.i18label4j.serializer.Localization;
 import lombok.NonNull;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -149,6 +150,11 @@ public class LiteralLabel implements Label {
     @Override
     public @NonNull String in(final @NonNull Locale locale) {
         return literal;
+    }
+
+    @Override
+    public @NonNull Localization localized(@NonNull Locale locale) {
+        return new Localization(locale, literal);
     }
 
     // ==== Object Methods ===================================================

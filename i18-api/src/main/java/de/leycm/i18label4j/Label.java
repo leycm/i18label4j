@@ -12,10 +12,11 @@ package de.leycm.i18label4j;
 
 import de.leycm.i18label4j.mapping.Mapping;
 import de.leycm.i18label4j.mapping.MappingRule;
-import de.leycm.i18label4j.serialize.LabelSerializer;
+import de.leycm.i18label4j.serializer.LabelSerializer;
 import de.leycm.i18label4j.exception.SerializationException;
 import de.leycm.i18label4j.exception.FormatException;
 
+import de.leycm.i18label4j.serializer.Localization;
 import lombok.NonNull;
 
 import java.util.Locale;
@@ -310,6 +311,9 @@ public interface Label {
      */
     @NonNull String in(@NonNull Locale locale);
 
+
+    // ==== Mapped Resolution =================================================
+
     /**
      * Resolves and applies all registered {@link Mapping} objects using
      * the provider's default {@link Locale} and default mapping rule.
@@ -385,6 +389,32 @@ public interface Label {
     default <T> @NonNull T serialize(Class<T> type) {
         return getProvider().serialize(this, type);
     }
+
+    // ==== Localized Resolution ==============================================
+
+    /**
+     * Resolves this label using the provider's default {@link Locale},
+     * without applying any placeholder substitutions.
+     *
+     * @return the raw resolved entry; never {@code null}
+     */
+    default @NonNull Localization localized() {
+        return localized(getProvider().getDefaultLocale());
+    }
+
+
+    /**
+     * Resolves this label for the given {@link Locale} without applying
+     * any placeholder substitutions.
+     *
+     * <p>For locale-aware labels this performs a translation lookup via
+     * the {@link LabelProvider}. For literal labels this simply returns
+     * the fixed {@link Localization} regardless of the locale.</p>
+     *
+     * @param locale the locale to resolve for; must not be {@code null}
+     * @return the raw resolved entry; never {@code null}
+     */
+    @NonNull Localization localized(@NonNull Locale locale);
 
     // ==== Object Methods ===================================================
 

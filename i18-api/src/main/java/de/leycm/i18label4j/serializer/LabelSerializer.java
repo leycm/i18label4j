@@ -8,7 +8,7 @@
  * Copyright 2026 (c) leycm <leycm@proton.me>
  * Copyright 2026 (c) maintainers
  */
-package de.leycm.i18label4j.serialize;
+package de.leycm.i18label4j.serializer;
 
 import de.leycm.i18label4j.Label;
 import de.leycm.i18label4j.LabelProvider;
