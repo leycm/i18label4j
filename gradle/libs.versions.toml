@@ -34,6 +34,7 @@ mcstructs-snbt = { group = "net.lenni0451.mcstructs", name="snbt", version="3.3.
 mcstructs-converter = { group = "net.lenni0451.mcstructs", name="converter", version="3.3.0"}
 mcstructs-itemcomponents = { group = "net.lenni0451.mcstructs", name="itemcomponents", version="3.3.0"}
 
+bungee-chat = { group = "net.md-5", name = "bungeecord-chat", version = "1.20-R0.2" }
 
 leycm-init = { group = "de.leycm", name = "init4j-api", version = "1.2" }
 leycm-label = { group = "de.leycm", name = "i18label4j-api", version = "1.0" }
