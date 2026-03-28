@@ -151,11 +151,15 @@ subprojects {
     }
 
     tasks.register<Exec>("updateRepo") {
-        println("Running push script in repository directory...")
         val repoDir = rootProject.projectDir.parentFile.resolve("repository")
         val script = repoDir.resolve("publish.sh")
 
         workingDir = repoDir
+
+        doFirst {
+            logger.info("Running push script in repository directory...")
+        }
+
         commandLine("sh", script.absolutePath)
     }
 

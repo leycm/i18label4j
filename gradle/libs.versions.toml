@@ -34,7 +34,12 @@ mcstructs-snbt = { group = "net.lenni0451.mcstructs", name="snbt", version="3.3.
 mcstructs-converter = { group = "net.lenni0451.mcstructs", name="converter", version="3.3.0"}
 mcstructs-itemcomponents = { group = "net.lenni0451.mcstructs", name="itemcomponents", version="3.3.0"}
 
-bungee-chat = { group = "net.md-5", name = "bungeecord-chat", version = "1.20-R0.2" }
+bungee-chat = { group = "net.md-5", name = "bungeecord-chat", version = "1.21-R0.2" }
+
+javafx-base = { group = "org.openjfx", name = "javafx-base", version = "22.0.1" }
+javafx-graphics = { group = "org.openjfx", name = "javafx-graphics", version = "22.0.1" }
+javafx-controls = { group = "org.openjfx", name = "javafx-controls", version = "22.0.1" }
+javafx-fxml = { group = "org.openjfx", name = "javafx-fxml", version = "22.0.1" }
 
 leycm-init = { group = "de.leycm", name = "init4j-api", version = "1.2" }
 leycm-label = { group = "de.leycm", name = "i18label4j-api", version = "1.0" }
@@ -43,6 +48,7 @@ leycm-label = { group = "de.leycm", name = "i18label4j-api", version = "1.0" }
 adventure = ["adventure-api", "adventure-minimessage", "adventure-plain", "adventure-legacy", "adventure-gson"]
 mcstructs = ["mcstructs-text", "mcstructs-nbt", "mcstructs-snbt", "mcstructs-converter", "mcstructs-itemcomponents"]
 jackson = ["jackson-core", "jackson-databind", "jackson-yaml", "jackson-toml"]
+javafx = ["javafx-base", "javafx-graphics", "javafx-controls", "javafx-fxml"]
 parser = ["parser-json", "parser-yaml", "parser-toml"]
 kotlin = ["kotlin-stdlib", "kotlin-reflect"]
 annos = ["annos-jetbrains", "annos-jspecify"]

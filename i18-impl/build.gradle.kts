@@ -7,6 +7,7 @@ dependencies {
     // text libs for API compatibility
     compileOnly(libs.mcstructs.text)
     compileOnly(libs.bungee.chat)
+    compileOnly(libs.javafx.controls)
     compileOnly(libs.adventure.gson)
     compileOnly(libs.adventure.plain)
     compileOnly(libs.adventure.legacy)

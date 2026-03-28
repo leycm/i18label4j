@@ -1,4 +1,4 @@
-// Gradle Plugin Mgmt
+// gradle plugin mgmt
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -16,27 +16,29 @@ fun getGradleProperty(name: String): String? {
         propsFile.inputStream().use { props.load(it) }
 
         props.getProperty(name)
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        logger.warn("Couldn't find \"$name\" in gradle.properties")
+        logger.debug("Exception: ${e.message}\n${e.stackTraceToString()}")
         null
     }
 }
 
-// Gradle Dependency Mgmt
+// gradle dependency mgmt
 dependencyResolutionManagement {
-    println("[+] Checking gradle.properties for version-catalog...")
+    logger.debug("[+] Checking gradle.properties for version-catalog...")
     val versionCatalogProp = getGradleProperty("version-catalog")
     if (versionCatalogProp.isNullOrEmpty() || versionCatalogProp == "gradle/libs.versions.toml")
         return@dependencyResolutionManagement
 
     versionCatalogs {
         create("libs") {
-            println("[+] Loading $versionCatalogProp ...")
+            logger.info("[+] Loading $versionCatalogProp ...")
             from(files("$rootDir/$versionCatalogProp"))
         }
     }
 }
 
-// Project Includes
+// project includes
 rootProject.name = getGradleProperty("artifact") ?: "null"
 var prefix = (getGradleProperty("prefix") ?: "sub") + "-"
 
