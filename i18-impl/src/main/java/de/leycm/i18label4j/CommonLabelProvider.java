@@ -18,13 +18,16 @@ import de.leycm.i18label4j.label.LiteralLabel;
 import de.leycm.i18label4j.label.LocaleLabel;
 import de.leycm.i18label4j.mapping.MappingRule;
 import de.leycm.i18label4j.serializer.LabelSerializer;
+import de.leycm.i18label4j.source.FileSource;
 import de.leycm.i18label4j.source.LocalizationSource;
+import de.leycm.init4j.instance.Instanceable;
 
 import lombok.NonNull;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.URI;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -183,6 +186,29 @@ public class CommonLabelProvider implements LabelProvider {
     @Contract(value = " -> new", pure = true)
     public static @NonNull Builder builder() {
         return new Builder();
+    }
+
+    /**
+     * Convenience method to create a {@link CommonLabelProvider} with a
+     * {@link FileSource} based on the given URI and default settings.
+     *
+     * <p>This is equivalent to calling
+     * {@code CommonLabelProvider.builder().build(FileSource.json(sourceUri))}.</p>
+     *
+     * @param sourceUri the URI of the parent folder of the
+     *                  JSON files containing localization data;
+     *                  never {@code null}
+     * @return a new {@link CommonLabelProvider} using the specified source;
+     *         never {@code null}
+     * @throws NullPointerException     if {@code sourceUri} is {@code null}
+     * @throws IllegalArgumentException if the source cannot be initialized with the given URI
+     */
+    public static @NonNull LabelProvider create(URI sourceUri) {
+        final Locale locale = Locale.getDefault();
+        final FileSource source = FileSource.json(sourceUri);
+        return CommonLabelProvider.builder()
+                .defaultMappingRule(MappingRule.DOLLAR_CURLY)
+                .buildWarm(source, locale);
     }
 
     // ==== Instance State ===================================================
