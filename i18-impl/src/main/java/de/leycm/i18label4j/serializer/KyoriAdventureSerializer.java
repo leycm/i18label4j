@@ -42,7 +42,7 @@ import lombok.NonNull;
  * @see LabelSerializer
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
-public interface AdventureComponentSerializer extends LabelSerializer<Component> {
+public interface KyoriAdventureSerializer extends LiteralFormatSerializer<Component> {
 
     // ==== Adventure Interface ===============================================
 
@@ -77,7 +77,7 @@ public interface AdventureComponentSerializer extends LabelSerializer<Component>
      *
      * <p>{@link TranslatableComponent} instances are converted to a locale-aware
      * {@link Label} using the component's key and fallback. All other component types
-     * are converted to a {@link LiteralLabel} via {@link #toLiteral(Component)}.</p>
+     * are converted to a {@link LiteralLabel} via {@link #toLiteral(Object)}.</p>
      *
      * @param serialized the component to deserialize; never {@code null}
      * @param provider   the label provider used to construct the result; never {@code null}
@@ -97,42 +97,10 @@ public interface AdventureComponentSerializer extends LabelSerializer<Component>
         }
     }
 
-    /**
-     * Parses a raw string input into an Adventure {@link Component}.
-     *
-     * @param input the string to parse; never {@code null}
-     * @return the resulting {@link Component}; never {@code null}
-     * @throws FormatException when the input cannot be parsed
-     */
-    @Override
-    default @NonNull Component format(@NonNull String input) throws FormatException {
-        try {
-            return fromLiteral(input);
-        } catch (Exception e) {
-            throw new FormatException(input, e);
-        }
-    }
+    // ==== KyoriComponentSerializer ==========================================
 
     /**
-     * Converts an Adventure {@link Component} to its string literal representation.
-     *
-     * @param component the component to convert; never {@code null}
-     * @return the string literal; never {@code null}
-     */
-    @NonNull String toLiteral(@NonNull Component component);
-
-    /**
-     * Converts a string literal to an Adventure {@link Component}.
-     *
-     * @param literal the string to parse; never {@code null}
-     * @return the resulting {@link Component}; never {@code null}
-     */
-    @NonNull Component fromLiteral(@NonNull String literal);
-
-    // ==== KyoriSerializer ===================================================
-
-    /**
-     * Base implementation of {@link AdventureComponentSerializer} backed by a Kyori {@link ComponentSerializer}.
+     * Base implementation of {@link KyoriAdventureSerializer} backed by a Kyori {@link ComponentSerializer}.
      *
      * <p>Delegates {@link #toLiteral(Component)} and {@link #fromLiteral(String)} to the
      * wrapped {@link ComponentSerializer}, enabling format-agnostic reuse across all
@@ -141,17 +109,17 @@ public interface AdventureComponentSerializer extends LabelSerializer<Component>
      * @since 1.0.0
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
-    class KyoriSerializer implements AdventureComponentSerializer {
+    class KyoriComponentSerializer implements KyoriAdventureSerializer {
 
         // wrapped Kyori serializer delegate
         protected final ComponentSerializer<Component, ?, String> serializer;
 
         /**
-         * Creates a new {@link KyoriSerializer} wrapping the given {@link ComponentSerializer}.
+         * Creates a new {@link KyoriComponentSerializer} wrapping the given {@link ComponentSerializer}.
          *
          * @param serializer the Kyori serializer to delegate to; never {@code null}
          */
-        public KyoriSerializer(final @NonNull ComponentSerializer<Component, ?, String> serializer) {
+        public KyoriComponentSerializer(final @NonNull ComponentSerializer<Component, ?, String> serializer) {
             this.serializer = serializer;
         }
 
@@ -181,16 +149,16 @@ public interface AdventureComponentSerializer extends LabelSerializer<Component>
     // ==== KyoriSerializer Types =============================================
 
     /**
-     * {@link KyoriSerializer} implementation using MiniMessage formatting.
+     * {@link KyoriComponentSerializer} implementation using MiniMessage formatting.
      *
      * <p>Uses {@link MiniMessage#miniMessage()} by default. A custom {@link MiniMessage}
      * instance can be supplied via the secondary constructor.</p>
      *
      * @since 1.0.0
-     * @see KyoriSerializer
+     * @see KyoriComponentSerializer
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
-    class KyoriMiniMessage extends KyoriSerializer {
+    class KyoriMiniMessage extends KyoriComponentSerializer {
 
         /**
          * Creates a new {@link KyoriMiniMessage} using the default {@link MiniMessage} instance.
@@ -210,16 +178,16 @@ public interface AdventureComponentSerializer extends LabelSerializer<Component>
     }
 
     /**
-     * {@link KyoriSerializer} implementation using legacy section sign ({@code §}) formatting.
+     * {@link KyoriComponentSerializer} implementation using legacy section sign ({@code §}) formatting.
      *
      * <p>Uses {@link LegacyComponentSerializer#legacySection()} by default. A custom
      * {@link LegacyComponentSerializer} instance can be supplied via the secondary constructor.</p>
      *
      * @since 1.0.0
-     * @see KyoriSerializer
+     * @see KyoriComponentSerializer
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
-    class KyoriLegacy extends KyoriSerializer {
+    class KyoriLegacy extends KyoriComponentSerializer {
 
         /**
          * Creates a new {@link KyoriLegacy} using the default legacy section serializer.
@@ -242,16 +210,16 @@ public interface AdventureComponentSerializer extends LabelSerializer<Component>
     }
 
     /**
-     * {@link KyoriSerializer} implementation using JSON formatting.
+     * {@link KyoriComponentSerializer} implementation using JSON formatting.
      *
      * <p>Uses {@link JSONComponentSerializer#json()} by default. A custom
      * {@link JSONComponentSerializer} instance can be supplied via the secondary constructor.</p>
      *
      * @since 1.0.0
-     * @see KyoriSerializer
+     * @see KyoriComponentSerializer
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
-    class KyoriJson extends KyoriSerializer {
+    class KyoriJson extends KyoriComponentSerializer {
 
         /**
          * Creates a new {@link KyoriJson} using the default JSON serializer.
@@ -271,16 +239,16 @@ public interface AdventureComponentSerializer extends LabelSerializer<Component>
     }
 
     /**
-     * {@link KyoriSerializer} implementation using plain text formatting.
+     * {@link KyoriComponentSerializer} implementation using plain text formatting.
      *
      * <p>Uses {@link PlainTextComponentSerializer#plainText()} by default. A custom
      * {@link PlainTextComponentSerializer} instance can be supplied via the secondary constructor.</p>
      *
      * @since 1.0.0
-     * @see KyoriSerializer
+     * @see KyoriComponentSerializer
      * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
      */
-    class KyoriPlainText extends KyoriSerializer {
+    class KyoriPlainText extends KyoriComponentSerializer {
 
         /**
          * Creates a new {@link KyoriPlainText} using the default plain text serializer.
