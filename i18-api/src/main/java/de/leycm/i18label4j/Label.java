@@ -10,6 +10,7 @@
  */
 package de.leycm.i18label4j;
 
+import de.leycm.i18label4j.mapping.Mappable;
 import de.leycm.i18label4j.mapping.Mapping;
 import de.leycm.i18label4j.mapping.MappingRule;
 import de.leycm.i18label4j.serializer.LabelSerializer;
@@ -21,7 +22,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * Represents a localizable or literal text label.
@@ -47,7 +47,7 @@ import java.util.function.Supplier;
  * @see Mapping
  * @author Lennard <a href="mailto:leycm@proton.me">leycm@proton.me</a>
  */
-public interface Label {
+public interface Label extends Mappable<Label> {
 
     // ==== Factory Methods ===================================================
 
@@ -156,65 +156,6 @@ public interface Label {
      * @return the set of mappings; never {@code null}, may be empty
      */
     @NonNull Set<Mapping> getMappings();
-
-    // ==== Mapping Registration ===============================================
-
-    /**
-     * Registers a static placeholder mapping on this label.
-     *
-     * <p>Delegates to {@link #map(String, Supplier)} by wrapping
-     * {@code value} in a constant {@link Supplier}. The key must not
-     * already be registered on this label.</p>
-     *
-     * @param key   the placeholder key; never {@code null}
-     * @param value the static replacement value; never {@code null}
-     * @return this label for method chaining; never {@code null}
-     * @throws IllegalArgumentException if a mapping with the same key
-     *                                  already exists on this label
-     * @throws NullPointerException     if {@code key} or {@code value}
-     *                                  is {@code null}
-     */
-    default @NonNull Label map(final @NonNull String key,
-                                 final @NonNull Object value) throws IllegalArgumentException {
-        return map(key, () -> value);
-    }
-
-    /**
-     * Registers a dynamic placeholder mapping on this label.
-     *
-     * <p>Delegates to {@link #map(Mapping)} by creating a new
-     * {@link Mapping} from the provided key and supplier. The supplier
-     * is evaluated lazily each time {@link #resolve()} is called.</p>
-     *
-     * @param key      the placeholder key; never {@code null}
-     * @param supplier the value supplier evaluated at mapping time;
-     *                 never {@code null}
-     * @return this label for method chaining; never {@code null}
-     * @throws IllegalArgumentException if a mapping with the same key
-     *                                  already exists on this label
-     * @throws NullPointerException     if {@code key} or {@code supplier}
-     *                                  is {@code null}
-     */
-    default @NonNull Label map(final @NonNull String key,
-                                 final @NonNull Supplier<Object> supplier) throws IllegalArgumentException {
-        return map(new Mapping(key, supplier));
-    }
-
-    /**
-     * Registers a {@link Mapping} directly on this label.
-     *
-     * <p>The mapping's key must be unique within this label instance.
-     * Duplicate keys are rejected to prevent ambiguous substitution
-     * results.</p>
-     *
-     * @param mapping the mapping to register; never {@code null}
-     * @return this label for method chaining; never {@code null}
-     * @throws IllegalArgumentException if a mapping with the same key
-     *                                  already exists on this label
-     * @throws NullPointerException     if {@code mapping} is {@code null}
-     */
-    @NonNull Label map(final @NonNull Mapping mapping) throws IllegalArgumentException;
-
 
     // ==== Mapped Resolution =================================================
 
