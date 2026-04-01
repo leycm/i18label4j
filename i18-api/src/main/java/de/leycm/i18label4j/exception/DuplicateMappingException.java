@@ -37,15 +37,6 @@ public class DuplicateMappingException extends IllegalArgumentException {
     }
 
     /**
-     * Constructs a new exception with the given detail message.
-     *
-     * @param message the detail message; never {@code null}
-     */
-    public DuplicateMappingException(final @NonNull String message) {
-        super(message);
-    }
-
-    /**
      * Constructs a new exception with the given detail message
      * and underlying cause.
      *

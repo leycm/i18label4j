@@ -10,6 +10,7 @@
  */
 package de.leycm.i18label4j.mapping;
 
+import de.leycm.i18label4j.exception.DuplicateMappingException;
 import lombok.NonNull;
 
 import java.util.function.Supplier;
@@ -42,13 +43,13 @@ public interface Mappable<T> {
      * @param key   the placeholder key; never {@code null}
      * @param value the static replacement value; never {@code null}
      * @return this instance for method chaining; never {@code null}
-     * @throws IllegalArgumentException if a mapping with the same key
+     * @throws DuplicateMappingException if a mapping with the same key
      *                                  already exists on this label
      * @throws NullPointerException     if {@code key} or {@code value}
      *                                  is {@code null}
      */
     default @NonNull T map(final @NonNull String key,
-                           final @NonNull Object value) throws IllegalArgumentException {
+                           final @NonNull Object value) throws DuplicateMappingException {
         return map(key, () -> value);
     }
 
@@ -62,13 +63,13 @@ public interface Mappable<T> {
      * @param supplier the value supplier evaluated at mapping time;
      *                 never {@code null}
      * @return this instance for method chaining; never {@code null}
-     * @throws IllegalArgumentException if a mapping with the same key
+     * @throws DuplicateMappingException if a mapping with the same key
      *                                  already exists on this label
      * @throws NullPointerException     if {@code key} or {@code supplier}
      *                                  is {@code null}
      */
     default @NonNull T map(final @NonNull String key,
-                           final @NonNull Supplier<Object> supplier) throws IllegalArgumentException {
+                           final @NonNull Supplier<Object> supplier) throws DuplicateMappingException {
         return map(new Mapping(key, supplier));
     }
 
@@ -81,9 +82,9 @@ public interface Mappable<T> {
      *
      * @param mapping the mapping to register; never {@code null}
      * @return this instance for method chaining; never {@code null}
-     * @throws IllegalArgumentException if a mapping with the same key
+     * @throws DuplicateMappingException if a mapping with the same key
      *                                  already exists on this label
      * @throws NullPointerException     if {@code mapping} is {@code null}
      */
-    @NonNull T map(@NonNull Mapping mapping) throws IllegalArgumentException;
+    @NonNull T map(@NonNull Mapping mapping) throws DuplicateMappingException;
 }

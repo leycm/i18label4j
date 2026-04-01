@@ -12,6 +12,7 @@ package de.leycm.i18label4j.label;
 
 import de.leycm.i18label4j.Label;
 import de.leycm.i18label4j.LabelProvider;
+import de.leycm.i18label4j.exception.DuplicateMappingException;
 import de.leycm.i18label4j.mapping.Mapping;
 import de.leycm.i18label4j.mapping.MappingRule;
 import de.leycm.i18label4j.Localization;
@@ -160,10 +161,9 @@ public class LocaleLabel implements Label {
      * @throws NullPointerException     if {@code mapping} is {@code null}
      */
     @Override
-    public @NonNull Label map(final @NonNull Mapping mapping) throws IllegalArgumentException {
+    public @NonNull Label map(final @NonNull Mapping mapping) throws DuplicateMappingException {
         if (mappings.contains(mapping))
-            throw new IllegalArgumentException(
-                    "Mapping with key \"" + mapping.key() + "\" already exists for this label.");
+            throw new DuplicateMappingException(mapping.key());
         mappings.add(mapping);
         return this;
     }

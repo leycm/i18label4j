@@ -10,6 +10,7 @@
  */
 package de.leycm.i18label4j;
 
+import de.leycm.i18label4j.exception.DuplicateMappingException;
 import de.leycm.i18label4j.mapping.Mappable;
 import de.leycm.i18label4j.mapping.Mapping;
 
@@ -69,11 +70,9 @@ public final class LabelConstructor<O> implements Mappable<LabelConstructor<O>> 
     @Override
     public @NonNull LabelConstructor<O> map(final @NonNull Mapping mapping) throws IllegalArgumentException {
         if (mappings.contains(mapping))
-            throw new IllegalArgumentException(
-                    "Mapping with key \"" + mapping.key() + "\" already exists for this LabelConstructor.");
+            throw new DuplicateMappingException(mapping.key());
         if (objectResolvers.containsKey(mapping.key()))
-            throw new IllegalArgumentException(
-                    "Mapping with key \"" + mapping.key() + "\" already exists as  for this LabelConstructor.");
+            throw new DuplicateMappingException(mapping.key());
          mappings.add(mapping);
          return this;
     }
@@ -88,20 +87,18 @@ public final class LabelConstructor<O> implements Mappable<LabelConstructor<O>> 
      * @param function the function evaluated at mapping time;
      *                 never {@code null}
      * @return this instance for method chaining; never {@code null}
-     * @throws IllegalArgumentException if a mapping with the same key
+     * @throws DuplicateMappingException if a mapping with the same key
      *                                  already exists on this label
      * @throws NullPointerException     if {@code key} or {@code function}
      *                                  is {@code null}
      */
     public @NonNull LabelConstructor<O> map(final @NonNull String key,
-                                            final @NonNull Function<O, Object> function) throws IllegalArgumentException {
+                                            final @NonNull Function<O, Object> function) throws DuplicateMappingException {
         // note: using a dummy mapping to check for existing keys in the mappings set, since it is keyed by the mapping's key
         if (mappings.contains(new Mapping(key, () -> null)))
-            throw new IllegalArgumentException(
-                    "Mapping with key \"" + key + "\" already exists for this LabelConstructor.");
+            throw new DuplicateMappingException(key);
         if (objectResolvers.containsKey(key))
-            throw new IllegalArgumentException(
-                    "Mapping with key \"" + key + "\" already exists for this LabelConstructor.");
+            throw new DuplicateMappingException(key);
         objectResolvers.put(key, function);
         return this;
     }
