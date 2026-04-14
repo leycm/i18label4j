@@ -19,6 +19,7 @@
 package de.leycm.label4j.placeholder;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -61,10 +62,20 @@ public final class PlaceholderRule {
     /** Minecraft Legacy style: {@code §:variable} */
     public static final @NonNull PlaceholderRule MINECRAFT_LEGACY = new PlaceholderRule("§:", null);
 
-    // ==== External Constants ================================================
+    // ==== Static API ========================================================
 
     public static final @NonNull Pattern KEY_VALIDATOR = Pattern.compile("^[A-Za-z0-9_.-]+$");
     public static final @NonNull Pattern AFFIX_VALIDATOR = Pattern.compile("^[A-Za-z0-9{}()\\[]<>%\\$§:._-]+$");
+
+    // note: may change overtime, but should be a reasonable default for most use cases
+    public static final @NonNull PlaceholderRule DEFAULT = DOLLAR_CURLY;
+
+    public static @NonNull PlaceholderRule create(
+            final @NonNull String prefix,
+            final @Nullable String suffix
+    ) {
+        return new PlaceholderRule(prefix, suffix);
+    }
 
     // ==== Internal Constants ================================================
 
@@ -78,10 +89,9 @@ public final class PlaceholderRule {
     private final @NonNull String prefix;
     private final @Nullable String suffix;
 
+    // ==== Internal Constructor ==============================================
 
-    // ==== Public API =======================================================
-
-    public PlaceholderRule(final @NonNull String prefix, final @Nullable String suffix) {
+    private PlaceholderRule(final @NonNull String prefix, final @Nullable String suffix) {
         this.prefix = prefix;
         this.suffix = suffix != null && suffix.isEmpty() ? null : suffix;
 
@@ -106,6 +116,8 @@ public final class PlaceholderRule {
             throw new IllegalArgumentException("PlaceholderRule suffixes must not exceed " + PREFIX_LIMIT + " characters");
         }
     }
+
+    // ==== Public API =======================================================
 
     public @NonNull Optional<String> suffix() {
         return Optional.ofNullable(suffix);

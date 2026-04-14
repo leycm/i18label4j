@@ -58,7 +58,7 @@ public record Placeholder(
     @Override
     public @NonNull String toString() {
         if (!Instanceable.hasInstance(LabelProvider.class)) {
-            return toString(PlaceholderRule.DOLLAR_CURLY);
+            return toString(PlaceholderRule.DEFAULT);
         }
         // todo: replace with return toString(LabelProvider.getInstance().getPlaceholderRule());
         return "";
