@@ -50,6 +50,7 @@ public interface Label {
 
     @NonNull String resolve();
 
+    // ==== Object Methods ===================================================
 
     @Override
     @NonNull String toString();

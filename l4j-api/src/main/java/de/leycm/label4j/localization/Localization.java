@@ -127,6 +127,8 @@ public record Localization(
         return result;
     }
 
+    // ==== Object Methods ===================================================
+
     @Override
     public @NonNull String toString() {
         return "Localization{" +
