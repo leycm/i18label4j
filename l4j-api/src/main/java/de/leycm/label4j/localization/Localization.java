@@ -34,11 +34,7 @@ public record Localization(
         @Nullable String result
 )  {
 
-    public Localization {
-        if (result != null && result.isBlank()) {
-            throw new IllegalArgumentException("The result of a Localization cannot be blank");
-        }
-    }
+    // ==== Static Factory Methods ============================================
 
     @ApiStatus.Internal
     public static @NonNull Localization empty(
@@ -64,6 +60,16 @@ public record Localization(
     ) {
         return new Localization(key, origin, request, result);
     }
+
+    // ==== Localization Validation ===========================================
+
+    public Localization {
+        if (result != null && result.isBlank()) {
+            throw new IllegalArgumentException("The result of a Localization cannot be blank");
+        }
+    }
+
+    // ==== Getter Methods ====================================================
 
     @Override
     public @NonNull Locale origin() {

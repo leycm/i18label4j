@@ -22,12 +22,19 @@ import de.leycm.label4j.exception.DuplicatePlaceholderException;
 import de.leycm.label4j.placeholder.Placeholder;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.UnmodifiableView;
 
+import java.util.Set;
 import java.util.function.Supplier;
 
 public interface Label {
 
+    // ==== Field Methods =====================================================
+
     @NonNull LabelProvider getProvider();
+
+    @UnmodifiableView
+    @NonNull Set<Placeholder> getPlaceholders();
 
     // ==== Replacement Methods ===============================================
 
@@ -53,7 +60,15 @@ public interface Label {
         return getProvider().format(resolve(), type);
     }
 
-    @NonNull String resolve();
+    default @NonNull String resolve() {
+        return getProvider().getPlaceholderRule().apply(value(), getPlaceholders());
+    }
+
+    default @NonNull <T> T value(final @NonNull Class<T> type) {
+        return getProvider().format(value(), type);
+    }
+
+    @NonNull String value();
 
     // ==== Object Methods ====================================================
 

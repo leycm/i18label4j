@@ -31,37 +31,46 @@ public record Placeholder(
         @NonNull Supplier<Object> value
 ) implements Comparable<Placeholder> {
 
+    // ==== Placeholder Validation =============================================
+
     public Placeholder {
         if (key.isBlank()) {
-            throw new IllegalArgumentException("Placeholder key must not be empty or blank");
+            throw new IllegalArgumentException(
+                    "Placeholder key must not be empty or blank"
+            );
         }
 
         if (PlaceholderRule.KEY_VALIDATOR.matcher(key).matches()) {
-            throw new IllegalArgumentException("Placeholder keys must not contain reserved characters: " + PlaceholderRule.KEY_VALIDATOR.pattern());
+            throw new IllegalArgumentException("Placeholder keys must "
+                    + "not contain reserved characters: "
+                    + PlaceholderRule.KEY_VALIDATOR.pattern()
+            );
         }
     }
+
+    // ==== Getter Methods ====================================================
 
     public @NonNull Object get() {
         return value.get();
     }
 
     public @NonNull String getAsString() {
-        return String.valueOf(value.get());
+        return String.valueOf(get());
     }
+
+    // ==== Object Methods ===================================================
 
     public @NonNull String toString(final @NonNull PlaceholderRule rule) {
         return rule.prefix() + key + rule.suffix().orElse("");
     }
-
-    // ==== Object Methods ===================================================
 
     @Override
     public @NonNull String toString() {
         if (!Instanceable.hasInstance(LabelProvider.class)) {
             return toString(PlaceholderRule.DEFAULT);
         }
-        // todo: replace with return toString(LabelProvider.getInstance().getPlaceholderRule());
-        return "";
+
+        return toString(LabelProvider.getInstance().getPlaceholderRule());
     }
 
     @Override

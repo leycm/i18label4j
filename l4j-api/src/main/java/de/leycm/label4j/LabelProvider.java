@@ -30,7 +30,7 @@ public interface LabelProvider extends Instanceable {
         return Instanceable.getInstance(LabelProvider.class);
     }
 
-    @NonNull PlaceholderRule getDefaultPlaceholderRule();
+    @NonNull PlaceholderRule getPlaceholderRule();
 
     // ==== Serialization ====================================================
 
