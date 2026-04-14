@@ -32,14 +32,12 @@ public record Placeholder(
 ) implements Comparable<Placeholder> {
 
     public Placeholder {
-        if (key.isEmpty()) {
-            throw new IllegalArgumentException("Placeholder key must not be empty");
+        if (key.isBlank()) {
+            throw new IllegalArgumentException("Placeholder key must not be empty or blank");
         }
 
-        for (char c : key.toCharArray()) {
-            if (PlaceholderRule.isKeyChar(c, false)) {
-                throw new IllegalArgumentException("Placeholder key contains illegal character: " + c);
-            }
+        if (PlaceholderRule.KEY_VALIDATOR.matcher(key).matches()) {
+            throw new IllegalArgumentException("Placeholder keys must not contain reserved characters: " + PlaceholderRule.KEY_VALIDATOR.pattern());
         }
     }
 
@@ -54,6 +52,8 @@ public record Placeholder(
     public @NonNull String toString(final @NonNull PlaceholderRule rule) {
         return rule.prefix() + key + rule.suffix().orElse("");
     }
+
+    // ==== Object Methods ===================================================
 
     @Override
     public @NonNull String toString() {
@@ -70,7 +70,6 @@ public record Placeholder(
         Placeholder that = (Placeholder) object;
         return Objects.equals(key, that.key);
     }
-
 
     @Override
     public int hashCode() {

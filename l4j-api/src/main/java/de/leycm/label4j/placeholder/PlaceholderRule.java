@@ -22,6 +22,7 @@ import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public final class PlaceholderRule {
 
@@ -58,7 +59,12 @@ public final class PlaceholderRule {
     public static final @NonNull PlaceholderRule MINI_MESSAGE = new PlaceholderRule("<var:", ">");
 
     /** Minecraft Legacy style: {@code §:variable} */
-    public static final @NonNull PlaceholderRule MINECRAFT_LEGACY = new PlaceholderRule("§:", "");
+    public static final @NonNull PlaceholderRule MINECRAFT_LEGACY = new PlaceholderRule("§:", null);
+
+    // ==== External Constants ================================================
+
+    public static final @NonNull Pattern KEY_VALIDATOR = Pattern.compile("^[A-Za-z0-9_.-]+$");
+    public static final @NonNull Pattern AFFIX_VALIDATOR = Pattern.compile("^[A-Za-z0-9{}()\\[]<>%\\$§:._-]+$");
 
     // ==== Internal Constants ================================================
 
@@ -72,36 +78,32 @@ public final class PlaceholderRule {
     private final @NonNull String prefix;
     private final @Nullable String suffix;
 
-    // ==== Placeholder Utils =================================================
-
-    static boolean isKeyChar(final char c, final boolean hasSuffix) {
-        return (c >= 'A' && c <= 'Z')
-                || (c >= 'a' && c <= 'z')
-                || (c >= '0' && c <= '9')
-                || c == '_' || c == '-'
-                || (c == '.' && hasSuffix);
-    }
 
     // ==== Public API =======================================================
 
     public PlaceholderRule(final @NonNull String prefix, final @Nullable String suffix) {
         this.prefix = prefix;
-        // note: converts "" to null
         this.suffix = suffix != null && suffix.isEmpty() ? null : suffix;
 
 
-        // todo: add check for illegal chars in prefix or suffix
+        if (!AFFIX_VALIDATOR.matcher(prefix).matches()) {
+            throw new IllegalArgumentException("PlaceholderRule prefixes must not contain illegal characters(" + AFFIX_VALIDATOR.pattern() + "): " + prefix);
+        }
+
+        if (suffix != null && !AFFIX_VALIDATOR.matcher(suffix).matches()) {
+            throw new IllegalArgumentException("PlaceholderRule suffixes must not contain illegal characters(" + AFFIX_VALIDATOR.pattern() + "): " + prefix);
+        }
 
         if (prefix.isEmpty()) {
-            throw new IllegalArgumentException("prefix must not be empty");
+            throw new IllegalArgumentException("PlaceholderRule prefixes must not be empty");
         }
 
         if (prefix.length() > PREFIX_LIMIT) {
-            throw new IllegalArgumentException("prefix must not exceed " + PREFIX_LIMIT + " characters");
+            throw new IllegalArgumentException("PlaceholderRule prefixes must not exceed " + PREFIX_LIMIT + " characters");
         }
 
         if (suffix != null && suffix.length() > PREFIX_LIMIT) {
-            throw new IllegalArgumentException("suffix must not exceed " + PREFIX_LIMIT + " characters");
+            throw new IllegalArgumentException("PlaceholderRule suffixes must not exceed " + PREFIX_LIMIT + " characters");
         }
     }
 
@@ -169,7 +171,7 @@ public final class PlaceholderRule {
                 // note: validate key characters skip replace if any char is illegal
                 boolean validKey = true;
                 for (int k = keyStart; k < keyEnd; k++) {
-                    if (!isKeyChar(input.charAt(k), sPresence)) {
+                    if (!isKeyChar(input.charAt(k))) {
                         validKey = false;
                         break;
                     }
@@ -181,7 +183,7 @@ public final class PlaceholderRule {
                 }
             } else {
                 // no suffix: key extends to last consecutive valid key character
-                while (keyEnd < len && isKeyChar(input.charAt(keyEnd), false)) keyEnd++;
+                while (keyEnd < len && isKeyChar(input.charAt(keyEnd))) keyEnd++;
             }
 
             if (keyEnd == keyStart) {
@@ -212,6 +214,14 @@ public final class PlaceholderRule {
     private boolean startsWith(final String s, final String sub, final int from) {
         if (from < 0 || from + sub.length() > s.length()) return false;
         return s.startsWith(sub, from);
+    }
+
+    private boolean isKeyChar(final char c) {
+        return (c >= 'A' && c <= 'Z')
+                || (c >= 'a' && c <= 'z')
+                || (c >= '0' && c <= '9')
+                || c == '_' || c == '-'
+                || (c == '.' && hasSuffix());
     }
 
     private @NonNull Map<String, String> buildLookup(
