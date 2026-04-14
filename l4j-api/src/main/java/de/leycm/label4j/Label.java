@@ -29,28 +29,33 @@ public interface Label {
 
     @NonNull LabelProvider getProvider();
 
+    // ==== Replacement Methods ===============================================
 
-    default @NonNull Label replace(final @NonNull String key,
-                           final @NonNull Object value) throws DuplicatePlaceholderException {
+    default @NonNull Label replace(
+            final @NonNull String key,
+            final @NonNull Object value
+    ) throws DuplicatePlaceholderException {
         return replace(key, () -> value);
     }
 
-    default @NonNull Label replace(final @NonNull String key,
-                           final @NonNull Supplier<Object> supplier) throws DuplicatePlaceholderException {
+    default @NonNull Label replace(
+            final @NonNull String key,
+            final @NonNull Supplier<Object> supplier
+    ) throws DuplicatePlaceholderException {
         return replace(new Placeholder(key, supplier));
     }
 
     @NonNull Label replace(@NonNull Placeholder mapping) throws DuplicatePlaceholderException;
 
+    // ==== Resolution Methods ================================================
 
     default @NonNull <T> T resolve(final @NonNull Class<T> type) {
         return getProvider().format(resolve(), type);
     }
 
-
     @NonNull String resolve();
 
-    // ==== Object Methods ===================================================
+    // ==== Object Methods ====================================================
 
     @Override
     @NonNull String toString();
