@@ -26,31 +26,38 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
-public record Placeholder(
-        @NonNull String key,
-        @NonNull Supplier<@Nullable Object> value
-) implements Comparable<Placeholder> {
+@SuppressWarnings("ClassCanBeRecord") // cause: equals/hashCode is intentionally key-only; record semantics would include value-supplier
+public final class Placeholder implements Comparable<Placeholder> {
+
+    // note: keep in mind that it is for EARLY checks and can be different from the actual check
+    // see: PlaceholderRule#isKeyChar(char)
+    private static final Pattern EARLY_KEY_VALIDATOR = Pattern.compile("^[A-Za-z0-9_.-]+$");
+
+    private final @NonNull String key;
+    private final @NonNull Supplier<@Nullable Object> value;
+
 
     // ==== Placeholder Validation =============================================
 
-    public Placeholder {
-        if (key.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Placeholder key must not be empty or blank"
-            );
-        }
-
-        if (!PlaceholderRule.KEY_VALIDATOR.matcher(key).matches()) {
+    public Placeholder(@NonNull String key, @NonNull Supplier<@Nullable Object> value) {
+        if (EARLY_KEY_VALIDATOR.matcher(key).matches()) {
             throw new IllegalArgumentException(
                     "Placeholder key contains illegal characters. "
-                    + "Allowed pattern: " + PlaceholderRule.KEY_VALIDATOR.pattern()
-                    + ", got: " + key
+                            + EARLY_KEY_VALIDATOR.pattern()
+                            + ", got: " + key
             );
         }
+        this.key = key;
+        this.value = value;
     }
 
     // ==== Getter Methods ====================================================
+
+    public @NonNull String key() {
+        return key;
+    }
 
     public @Nullable Object get() {
         return value.get();
@@ -61,6 +68,12 @@ public record Placeholder(
         return String.valueOf(get());
     }
 
+    public @NonNull String getAsString(String fallback) {
+        Object o = get();
+        if (o == null) return fallback;
+        return String.valueOf(o);
+    }
+
     // ==== Object Methods ===================================================
 
     public @NonNull String toString(final @NonNull PlaceholderRule rule) {
@@ -69,11 +82,7 @@ public record Placeholder(
 
     @Override
     public @NonNull String toString() {
-        if (!Instanceable.hasInstance(LabelProvider.class)) {
             return toString(PlaceholderRule.DEFAULT);
-        }
-
-        return toString(LabelProvider.getInstance().getPlaceholderRule());
     }
 
     @Override
