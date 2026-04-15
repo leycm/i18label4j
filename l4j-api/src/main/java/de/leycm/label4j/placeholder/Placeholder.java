@@ -41,10 +41,11 @@ public record Placeholder(
             );
         }
 
-        if (PlaceholderRule.KEY_VALIDATOR.matcher(key).matches()) {
-            throw new IllegalArgumentException("Placeholder keys must "
-                    + "not contain reserved characters: "
-                    + PlaceholderRule.KEY_VALIDATOR.pattern()
+        if (!PlaceholderRule.KEY_VALIDATOR.matcher(key).matches()) {
+            throw new IllegalArgumentException(
+                    "Placeholder key contains illegal characters. "
+                    + "Allowed pattern: " + PlaceholderRule.KEY_VALIDATOR.pattern()
+                    + ", got: " + key
             );
         }
     }
