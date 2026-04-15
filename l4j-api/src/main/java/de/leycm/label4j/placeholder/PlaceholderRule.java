@@ -63,9 +63,6 @@ public final class PlaceholderRule {
 
     // ==== Static API ========================================================
 
-    public static final @NonNull Pattern KEY_VALIDATOR = Pattern.compile("^[A-Za-z0-9_.-]+$");
-    public static final @NonNull Pattern AFFIX_VALIDATOR = Pattern.compile("^[A-Za-z0-9{}()\\[]<>%\\$§:._-]+$");
-
     // note: may change overtime, but should be a reasonable default for most use cases
     public static final @NonNull PlaceholderRule DEFAULT = DOLLAR_CURLY;
 
@@ -78,12 +75,14 @@ public final class PlaceholderRule {
 
     // ==== Internal Constants ================================================
 
-    // maximum allowed input length (1 MB) passed to apply()
-    private static final int INPUT_LIMIT = 1_000_000;
-    // maximum number of substitutions performed in a single apply() call
-    private static final int PLACEHOLDER_LIMIT = 10_000;
+    //
+    private static final Pattern AFFIX_VALIDATOR = Pattern.compile("^[A-Za-z0-9{}()\\[]<>%\\$§:._-]+$");
     // maximum allowed prefix and suffix length
-    private static final int PREFIX_LIMIT = 5;
+    private static final int AFFIX_LENGTH_LIMIT = 5;
+    // maximum allowed input length (1 MB) passed to apply()
+    private static final int INPUT_LENGTH_LIMIT = 1_000_000;
+    // maximum number of substitutions performed in a single apply() call
+    private static final int PLACEHOLDER_LIMIT = 5_000;
 
     private final @NonNull String prefix;
     private final @Nullable String suffix;
@@ -96,23 +95,39 @@ public final class PlaceholderRule {
 
 
         if (!AFFIX_VALIDATOR.matcher(prefix).matches()) {
-            throw new IllegalArgumentException("PlaceholderRule prefixes must not contain illegal characters(" + AFFIX_VALIDATOR.pattern() + "): " + prefix);
+            throw new IllegalArgumentException(
+                    "Placeholder prefix contains illegal characters. "
+                            + AFFIX_VALIDATOR.pattern()
+                            + ", got: " + prefix
+            );
         }
 
         if (suffix != null && !AFFIX_VALIDATOR.matcher(suffix).matches()) {
-            throw new IllegalArgumentException("PlaceholderRule suffixes must not contain illegal characters(" + AFFIX_VALIDATOR.pattern() + "): " + prefix);
+            throw new IllegalArgumentException(
+                    "Placeholder prefix contains illegal characters. "
+                            + AFFIX_VALIDATOR.pattern()
+                            + ", got: " + prefix
+            );
         }
 
         if (prefix.isEmpty()) {
-            throw new IllegalArgumentException("PlaceholderRule prefixes must not be empty");
+            throw new IllegalArgumentException(
+                    "PlaceholderRule prefix must not be empty"
+            );
         }
 
-        if (prefix.length() > PREFIX_LIMIT) {
-            throw new IllegalArgumentException("PlaceholderRule prefixes must not exceed " + PREFIX_LIMIT + " characters");
+        if (prefix.length() > AFFIX_LENGTH_LIMIT) {
+            throw new IllegalArgumentException(
+                    "PlaceholderRule prefix exceed "
+                            + AFFIX_LENGTH_LIMIT + " characters."
+            );
         }
 
-        if (suffix != null && suffix.length() > PREFIX_LIMIT) {
-            throw new IllegalArgumentException("PlaceholderRule suffixes must not exceed " + PREFIX_LIMIT + " characters");
+        if (suffix != null && suffix.length() > AFFIX_LENGTH_LIMIT) {
+            throw new IllegalArgumentException(
+                    "PlaceholderRule suffix exceed "
+                            + AFFIX_LENGTH_LIMIT + " characters."
+            );
         }
     }
 
@@ -130,11 +145,24 @@ public final class PlaceholderRule {
         return suffix != null;
     }
 
+    // note: replace with escaping \${foo} -> ${foo}, \\${foo} -> \${foo}
     public @NonNull String apply(final @NonNull String input,
                                  final @NonNull Set<Placeholder> placeholders) {
-        if (input.length() > INPUT_LIMIT) throw new IllegalArgumentException("Input too large " + INPUT_LIMIT);
+        if (input.length() > INPUT_LENGTH_LIMIT) {
+            throw new IllegalArgumentException(
+                    "Input too large ("
+                            + input.length()
+                            + ") " + INPUT_LENGTH_LIMIT
+                            + " characters.");
+        }
+
         if (input.isEmpty() || placeholders.isEmpty()) return input;
         if (!input.contains(prefix)) return input;
+
+        if (placeholders.size() > PLACEHOLDER_LIMIT) {
+            throw new IllegalArgumentException("too many mappings: " + placeholders.size() +
+                    " (maximum allowed is " + PLACEHOLDER_LIMIT + ")");
+        }
 
         final Map<String, String> lookup = buildLookup(placeholders);
 
@@ -146,10 +174,6 @@ public final class PlaceholderRule {
 
         final StringBuilder sb  = new StringBuilder(len + 32);
 
-        if (lookup.size() > PLACEHOLDER_LIMIT) {
-            throw new IllegalArgumentException("too many mappings: " + lookup.size() +
-                    " (maximum allowed is " + PLACEHOLDER_LIMIT + ")");
-        }
 
         int i = 0;
         while (i < len) {
