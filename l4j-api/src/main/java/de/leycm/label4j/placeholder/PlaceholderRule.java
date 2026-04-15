@@ -76,7 +76,7 @@ public final class PlaceholderRule {
     // ==== Internal Constants ================================================
 
     //
-    private static final Pattern AFFIX_VALIDATOR = Pattern.compile("^[A-Za-z0-9{}()\\[]<>%\\$§:._-]+$");
+    private static final @NonNull Pattern AFFIX_VALIDATOR = Pattern.compile("^[A-Za-z0-9{}()\\[]<>%\\$§:._-]+$");
     // maximum allowed prefix and suffix length
     private static final int AFFIX_LENGTH_LIMIT = 5;
     // maximum allowed input length (1 MB) passed to apply()

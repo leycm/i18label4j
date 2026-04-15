@@ -30,7 +30,7 @@ public final class Placeholder implements Comparable<Placeholder> {
 
     // note: keep in mind that it is for EARLY checks and can be different from the actual check
     // see: PlaceholderRule#isKeyChar(char)
-    private static final Pattern EARLY_KEY_VALIDATOR = Pattern.compile("^[A-Za-z0-9_.-]+$");
+    private static final @NonNull Pattern EARLY_KEY_VALIDATOR = Pattern.compile("^[A-Za-z0-9_.-]+$");
 
     private final @NonNull String key;
     private final @NonNull Supplier<@Nullable Object> value;

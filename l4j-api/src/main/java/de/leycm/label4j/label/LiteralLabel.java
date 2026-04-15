@@ -31,6 +31,8 @@ public class LiteralLabel implements Label, Comparable<LiteralLabel> {
         this.provider = provider;
     }
 
+    // ==== Field Methods =====================================================
+
     @Override
     public @NonNull LabelProvider getProvider() {
         return provider;
@@ -40,6 +42,8 @@ public class LiteralLabel implements Label, Comparable<LiteralLabel> {
     public @UnmodifiableView @NonNull Set<Placeholder> getPlaceholders() {
         return Collections.unmodifiableSet(placeholders);
     }
+
+    // ==== Replacement Methods ===============================================
 
     @Override
     public @NonNull Label replace(
@@ -56,11 +60,14 @@ public class LiteralLabel implements Label, Comparable<LiteralLabel> {
         return this;
     }
 
+    // ==== Resolution Methods ================================================
+
     @Override
     public @NonNull Localization localize(@NonNull Locale locale) {
         return Localization.literal(locale, literal);
     }
 
+    // ==== Object Methods ====================================================
 
     @Override
     public @NonNull String toString() {

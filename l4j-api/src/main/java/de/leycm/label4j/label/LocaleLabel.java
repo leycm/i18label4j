@@ -31,6 +31,8 @@ public class LocaleLabel implements Label, Comparable<LocaleLabel> {
         this.provider = provider;
     }
 
+    // ==== Field Methods =====================================================
+
     public @NonNull String key() {
         return key;
     }
@@ -45,6 +47,8 @@ public class LocaleLabel implements Label, Comparable<LocaleLabel> {
         return Collections.unmodifiableSet(placeholders);
     }
 
+    // ==== Replacement Methods ===============================================
+
     @Override
     public @NonNull Label replace(@NonNull Set<@NonNull Placeholder> placeholders) throws DuplicatePlaceholderException {
         for (final Placeholder placeholder : placeholders) {
@@ -58,10 +62,14 @@ public class LocaleLabel implements Label, Comparable<LocaleLabel> {
         return this;
     }
 
+    // ==== Resolution Methods ================================================
+
     @Override
     public @NonNull Localization localize(final @NonNull Locale locale) {
         return getProvider().localize(locale, key);
     }
+
+    // ==== Object Methods ====================================================
 
     @Override
     public @NonNull String toString() {
