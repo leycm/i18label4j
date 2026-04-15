@@ -22,13 +22,14 @@ import de.leycm.init4j.instance.Instanceable;
 import de.leycm.label4j.LabelProvider;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Supplier;
 
 public record Placeholder(
         @NonNull String key,
-        @NonNull Supplier<Object> value
+        @NonNull Supplier<@Nullable Object> value
 ) implements Comparable<Placeholder> {
 
     // ==== Placeholder Validation =============================================
@@ -50,11 +51,12 @@ public record Placeholder(
 
     // ==== Getter Methods ====================================================
 
-    public @NonNull Object get() {
+    public @Nullable Object get() {
         return value.get();
     }
 
     public @NonNull String getAsString() {
+        // note: null Objects will be replaced with "null"
         return String.valueOf(get());
     }
 
