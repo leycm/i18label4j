@@ -35,13 +35,7 @@ public record Placeholder(
     // ==== Placeholder Validation =============================================
 
     public Placeholder {
-        if (key.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Placeholder key must not be empty or blank"
-            );
-        }
-
-        if (!PlaceholderRule.KEY_VALIDATOR.matcher(key).matches()) {
+        if (PlaceholderRule.KEY_VALIDATOR.matcher(key).matches()) {
             throw new IllegalArgumentException(
                     "Placeholder key contains illegal characters. "
                     + "Allowed pattern: " + PlaceholderRule.KEY_VALIDATOR.pattern()
