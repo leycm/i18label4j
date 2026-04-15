@@ -19,8 +19,8 @@
 package de.leycm.label4j.serializer;
 
 import de.leycm.label4j.exception.FormatException;
-
 import de.leycm.label4j.localization.Localization;
+
 import lombok.NonNull;
 
 @FunctionalInterface

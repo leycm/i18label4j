@@ -18,9 +18,6 @@
  */
 package de.leycm.label4j.placeholder;
 
-import de.leycm.init4j.instance.Instanceable;
-import de.leycm.label4j.LabelProvider;
-
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 
