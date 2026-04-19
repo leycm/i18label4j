@@ -68,7 +68,7 @@ public class SingleFileSource implements LocalizationSource{
         final Path file = directory.resolve(filename);
         final Map<String, String> parse = parser.parse(file);
 
-        Map<String, Localization> result = new HashMap<>();
+        final Map<String, Localization> result = new HashMap<>();
         for (Map.Entry<String, String> entry : parse.entrySet()) {
             result.put(
                     entry.getKey(),
