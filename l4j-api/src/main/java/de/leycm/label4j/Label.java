@@ -19,6 +19,8 @@
 package de.leycm.label4j;
 
 import de.leycm.label4j.exception.DuplicatePlaceholderException;
+import de.leycm.label4j.label.LiteralLabel;
+import de.leycm.label4j.label.LocaleLabel;
 import de.leycm.label4j.localization.Localization;
 import de.leycm.label4j.placeholder.Placeholder;
 
@@ -31,6 +33,40 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 public interface Label {
+
+    // ==== Static Constructor ================================================
+
+    static @NonNull Label locale(final @NonNull String key) {
+        return new LocaleLabel(LabelProvider.getInstance(), key);
+    }
+
+    static @NonNull Label locale(
+            final @NonNull String key,
+            final @NonNull LabelProvider provider
+    ) {
+        return new LocaleLabel(provider, key);
+    }
+
+    static @NonNull Label literal(final @NonNull String literal) {
+        return new LiteralLabel(LabelProvider.getInstance(), literal);
+    }
+
+    static @NonNull Label literal(
+            final @NonNull String literal,
+            final @NonNull LabelProvider provider
+    ) {
+        return new LiteralLabel(provider, literal);
+    }
+
+    static <T> @NonNull LabelFactory<T> factory() {
+        return new LabelFactory<>(LabelProvider.getInstance());
+    }
+
+    static <T> @NonNull LabelFactory<T> factory(
+            final @NonNull LabelProvider provider
+    ) {
+        return new LabelFactory<>(provider);
+    }
 
     // ==== Field Methods =====================================================
 

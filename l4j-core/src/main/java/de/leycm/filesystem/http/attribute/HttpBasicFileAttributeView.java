@@ -1,5 +1,6 @@
-package de.leycm.filesystem.http;
+package de.leycm.filesystem.http.attribute;
 
+import de.leycm.filesystem.http.HttpPath;
 import lombok.NonNull;
 
 import java.io.IOException;

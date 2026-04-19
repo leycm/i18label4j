@@ -1,7 +1,7 @@
 package de.leycm.filesystem.http;
 
+import de.leycm.filesystem.http.provider.HttpFileSystemProvider;
 import lombok.NonNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.URI;

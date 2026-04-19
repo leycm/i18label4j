@@ -1,4 +1,4 @@
-package de.leycm.filesystem.http;
+package de.leycm.filesystem.http.attribute;
 
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;

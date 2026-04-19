@@ -1,7 +1,10 @@
-package de.leycm.filesystem.http;
+package de.leycm.filesystem.http.provider;
 
+import de.leycm.filesystem.http.*;
+import de.leycm.filesystem.http.attribute.HttpBasicFileAttributeView;
+import de.leycm.filesystem.http.attribute.HttpBasicFileAttributes;
+import de.leycm.filesystem.http.channel.HttpSeekableByteChannel;
 import lombok.NonNull;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 

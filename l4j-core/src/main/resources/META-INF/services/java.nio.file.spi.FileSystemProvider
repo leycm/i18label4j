@@ -1,2 +1,2 @@
-de.leycm.filesystem.http.HttpFileSystemProvider
-de.leycm.filesystem.http.HttpsFileSystemProvider
+de.leycm.filesystem.http.provider.HttpFileSystemProvider
+de.leycm.filesystem.http.provider.HttpsFileSystemProvider

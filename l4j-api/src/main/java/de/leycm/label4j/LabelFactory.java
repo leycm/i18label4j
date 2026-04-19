@@ -95,18 +95,18 @@ public class LabelFactory<T> {
 
     // ==== Creation Methods ==================================================
 
-    public @NonNull Label create(
+    public @NonNull Label createLocale(
             final @NonNull String key,
             final @NonNull T t
     ) {
-        return applyPlaceholder(new LocaleLabel(key, provider), t);
+        return applyPlaceholder(new LocaleLabel(provider, key), t);
     }
 
     public @NonNull Label createLiteral(
             final @NonNull String literal,
             final @NonNull T t
     ) {
-        return applyPlaceholder(new LiteralLabel(literal, provider), t);
+        return applyPlaceholder(new LiteralLabel(provider, literal), t);
     }
 
     private @NonNull Label applyPlaceholder(

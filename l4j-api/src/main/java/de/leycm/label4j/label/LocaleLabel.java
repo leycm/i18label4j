@@ -26,12 +26,12 @@ public class LocaleLabel implements Label, Comparable<LocaleLabel> {
 
     @ApiStatus.Internal
     public LocaleLabel(
-            final @NonNull String key,
-            final @NonNull LabelProvider provider
+            final @NonNull LabelProvider provider,
+            final @NonNull String key
     ) {
         this.placeholders = ConcurrentHashMap.newKeySet();
-        this.key = key;
         this.provider = provider;
+        this.key = key;
 
         if (KEY_VALIDATOR.matcher(key).matches()) {
             throw new IllegalArgumentException(

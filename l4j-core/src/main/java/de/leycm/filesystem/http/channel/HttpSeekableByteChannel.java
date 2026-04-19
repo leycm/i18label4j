@@ -1,4 +1,4 @@
-package de.leycm.filesystem.http;
+package de.leycm.filesystem.http.channel;
 
 import lombok.NonNull;
 

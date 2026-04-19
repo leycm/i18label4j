@@ -23,12 +23,12 @@ public class LiteralLabel implements Label, Comparable<LiteralLabel> {
 
     @ApiStatus.Internal
     public LiteralLabel(
-            final @NonNull String literal,
-            final @NonNull LabelProvider provider
+            final @NonNull LabelProvider provider,
+            final @NonNull String literal
     ) {
         this.placeholders = ConcurrentHashMap.newKeySet();
-        this.literal = literal;
         this.provider = provider;
+        this.literal = literal;
     }
 
     // ==== Field Methods =====================================================
