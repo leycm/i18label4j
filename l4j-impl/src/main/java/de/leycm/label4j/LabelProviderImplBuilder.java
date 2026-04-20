@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class LabelProviderImplBuilder {
 
@@ -44,10 +45,12 @@ public class LabelProviderImplBuilder {
 
     private final @NonNull Map<Class<?>, LabelSerializer<?>>   serializers   = new HashMap<>();
     private final @NonNull Map<Class<?>, LabelDeserializer<?>> deserializers = new HashMap<>();
-    private final @NonNull Map<Class<?>, LabelFormatter<?>>     formatters    = new HashMap<>();
+    private final @NonNull Map<Class<?>, LabelFormatter<?>>    formatters    = new HashMap<>();
 
     private @NonNull PlaceholderRule placeholderRule = DEFAULT_RULE;
     private @NonNull Locale          defaultLocale   = DEFAULT_LOCALE;
+
+    private @NonNull Consumer<Exception> loadErrorHandler = e -> {};
 
     // package-private: use LabelProviderImpl.builder()
     LabelProviderImplBuilder() {}
@@ -72,6 +75,13 @@ public class LabelProviderImplBuilder {
     public @NonNull LabelProviderImplBuilder placeholderRule(
             final @NonNull PlaceholderRule rule) {
         this.placeholderRule = rule;
+        return this;
+    }
+
+    @Contract("_ -> this")
+    public @NonNull LabelProviderImplBuilder onLoadError(
+            final @NonNull Consumer<Exception> handler) {
+        this.loadErrorHandler = handler;
         return this;
     }
 
@@ -177,7 +187,8 @@ public class LabelProviderImplBuilder {
                 new ConcurrentHashMap<>(formatters),
                 placeholderRule,
                 source,
-                defaultLocale
+                defaultLocale,
+                loadErrorHandler
         );
     }
 

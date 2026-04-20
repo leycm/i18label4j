@@ -34,11 +34,13 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class LabelProviderImpl implements LabelProvider {
@@ -55,21 +57,22 @@ public class LabelProviderImpl implements LabelProvider {
     // ==== Instance State ===================================================
 
     // locale language-tag -> (translation key -> LocalizedResult)
-    private final ConcurrentHashMap<String, ConcurrentHashMap<String, Localization>>
+    protected final ConcurrentHashMap<String, ConcurrentHashMap<String, Localization>>
             translationCache = new ConcurrentHashMap<>();
     // target class -> serializer
-    private final Map<Class<?>, LabelSerializer<?>>
+    protected final Map<Class<?>, LabelSerializer<?>>
             serializerRegistry = new ConcurrentHashMap<>();
     // target class -> deserializer
-    private final Map<Class<?>, LabelDeserializer<?>>
+    protected final Map<Class<?>, LabelDeserializer<?>>
             deserializerRegistry = new ConcurrentHashMap<>();
     // target class -> serializer
-    private final Map<Class<?>, LabelFormatter<?>>
+    protected final Map<Class<?>, LabelFormatter<?>>
             formaterRegistry = new ConcurrentHashMap<>();
 
-    private final @NonNull LocalizationSource localizationSource;
-    private final @NonNull PlaceholderRule placeholderRule;
-    private final @NonNull Locale defaultLocale;
+    protected final @NonNull LocalizationSource localizationSource;
+    protected final @NonNull PlaceholderRule placeholderRule;
+    protected final @NonNull Locale defaultLocale;
+    protected final @NonNull Consumer<Exception> loadErrorHandler;
 
     public LabelProviderImpl(
             final @NonNull Map<Class<?>, LabelSerializer<?>> serializers,
@@ -77,13 +80,15 @@ public class LabelProviderImpl implements LabelProvider {
             final @NonNull Map<Class<?>, LabelFormatter<?>> formater,
             final @NonNull PlaceholderRule placeholderRule,
             final @NonNull LocalizationSource source,
-            final @NonNull Locale defaultLocale) {
+            final @NonNull Locale defaultLocale,
+            final @NonNull Consumer<Exception> loadErrorHandler) {
         this.serializerRegistry.putAll(serializers);
         this.deserializerRegistry.putAll(deserializers);
         this.formaterRegistry.putAll(formater);
         this.localizationSource = source;
         this.placeholderRule = placeholderRule;
         this.defaultLocale = defaultLocale;
+        this.loadErrorHandler = loadErrorHandler;
     }
 
     // ==== Configuration =====================================================
@@ -118,8 +123,7 @@ public class LabelProviderImpl implements LabelProvider {
     @Override
     public void warmup(@NonNull Locale @NonNull ... locales) {
         for (final Locale locale : locales) {
-            final Localization localization = localize(locale, Localization.WARMUP_KEY);
-            // todo: handle localization
+            localize(locale, Localization.WARMUP_KEY);
         }
     }
 
@@ -152,36 +156,28 @@ public class LabelProviderImpl implements LabelProvider {
     public @NonNull ConcurrentMap<String, Localization> loadLocaleMap(
             final @NonNull Locale locale) {
 
-        final AtomicReference<IllegalArgumentException> loadException = new AtomicReference<>();
+        final String tag = locale.toLanguageTag();
 
-        final Function<Throwable, IllegalArgumentException>
-                loadExceptionBuilder = e -> new IllegalArgumentException(
-                        "Failed to load translations for locale \""
-                                + locale.toLanguageTag()
-                                + "\"; an empty map is cached due to "
-                                + "the failure. Translation"
-                                + "attempts will not re-attempt loading "
-                                + "until the cache is cleared.", e
-                );
+        ConcurrentMap<String, Localization> existing
+                = translationCache.get(tag);
+
+        if (existing != null) return existing;
 
 
-        final ConcurrentMap<String, Localization> localeMap =
-                translationCache.computeIfAbsent(locale.toLanguageTag(),
-                        tag -> {
-                    try {
-                        return new ConcurrentHashMap<>(
-                                localizationSource.getLocalization(locale)
-                        );
-                    } catch (final Exception e) {
-                        loadException.set(loadExceptionBuilder.apply(e));
-                        return new ConcurrentHashMap<>();
-                    }
-                });
+        Map<String, Localization> loaded;
+        try {
+            loaded = localizationSource.getLocalization(locale);
+        } catch (final Exception e) {
+            loadErrorHandler.accept(e);
+            loaded = new HashMap<>();
+        }
 
-        final IllegalArgumentException err = loadException.get();
-        if (err != null) throw err;
+        final ConcurrentHashMap<String, Localization> result
+                = new ConcurrentHashMap<>(loaded);
 
-        return localeMap;
+        // note: getting the existing value again after loading is necessary to avoid race conditions
+        existing = translationCache.putIfAbsent(tag, result);
+        return existing != null ? existing : result;
     }
 
     // ==== Serialization =====================================================

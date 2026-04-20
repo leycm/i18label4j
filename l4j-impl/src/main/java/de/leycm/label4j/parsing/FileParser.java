@@ -71,7 +71,7 @@ public interface FileParser {
 
     // ==== Implementations ==================================================
 
-    final class Json implements FileParser {
+    final class JsonParser implements FileParser {
 
         @Override
         public @NonNull String getExtension() {
