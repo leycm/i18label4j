@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 
-public final class HttpSeekableByteChannel implements SeekableByteChannel {
+public final class HyperTextSeekableByteChannel implements SeekableByteChannel {
     private final byte @NonNull [] data;
     private int position = 0;
     private boolean open = true;
 
-    public HttpSeekableByteChannel(final byte @NonNull [] data) {
+    public HyperTextSeekableByteChannel(final byte @NonNull [] data) {
         this.data = data.clone();
     }
 

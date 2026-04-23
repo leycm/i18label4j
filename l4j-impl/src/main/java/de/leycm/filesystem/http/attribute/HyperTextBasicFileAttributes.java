@@ -10,12 +10,12 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public final class HttpBasicFileAttributes implements BasicFileAttributes {
+public final class HyperTextBasicFileAttributes implements BasicFileAttributes {
     private final @NonNull FileTime lastModified;
     private final long size;
     private final boolean directory;
 
-    public HttpBasicFileAttributes(
+    public HyperTextBasicFileAttributes(
             final long size,
             final boolean directory,
             final @Nullable String lastModifiedHeader) {
