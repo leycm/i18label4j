@@ -1,6 +1,6 @@
 package de.leycm.filesystem.http.attribute;
 
-import de.leycm.filesystem.http.HttpPath;
+import de.leycm.filesystem.http.HyperTextPath;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -8,10 +8,10 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 
-public final class HttpBasicFileAttributeView implements BasicFileAttributeView {
-    private final @NonNull HttpPath path;
+public final class HyperTextBasicFileAttributeView implements BasicFileAttributeView {
+    private final @NonNull HyperTextPath path;
 
-    public HttpBasicFileAttributeView(final @NonNull HttpPath path) {
+    public HyperTextBasicFileAttributeView(final @NonNull HyperTextPath path) {
         this.path = path;
     }
 

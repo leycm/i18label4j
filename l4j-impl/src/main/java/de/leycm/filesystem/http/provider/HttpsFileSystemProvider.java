@@ -1,7 +1,8 @@
 package de.leycm.filesystem.http.provider;
 
-public class HttpsFileSystemProvider extends HttpFileSystemProvider {
+import de.leycm.filesystem.http.HyperTextFileSystemProvider;
 
+public class HttpsFileSystemProvider extends HyperTextFileSystemProvider {
     public HttpsFileSystemProvider() {
         super("https");
     }

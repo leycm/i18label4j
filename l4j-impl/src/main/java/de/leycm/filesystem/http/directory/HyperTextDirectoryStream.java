@@ -1,4 +1,4 @@
-package de.leycm.filesystem.http;
+package de.leycm.filesystem.http.directory;
 
 import lombok.NonNull;
 
@@ -8,13 +8,13 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public final class HttpDirectoryStream implements DirectoryStream<Path> {
+public final class HyperTextDirectoryStream implements DirectoryStream<Path> {
     private final @NonNull Path dir;
     private final @NonNull String[] entries;
     private final @NonNull DirectoryStream.Filter<? super Path> filter;
     private boolean closed = false;
 
-    public HttpDirectoryStream(
+    public HyperTextDirectoryStream(
             final @NonNull Path dir,
             final @NonNull String dotDirContent,
             final @NonNull DirectoryStream.Filter<? super Path> filter) {
@@ -31,20 +31,17 @@ public final class HttpDirectoryStream implements DirectoryStream<Path> {
         if (closed) {
             throw new IllegalStateException("Stream already closed");
         }
+
         return new Iterator<>() {
             private int index = 0;
 
             @Override
             public boolean hasNext() {
-                if (closed) {
-                    return false;
-                }
+                if (closed) return false;
                 while (index < entries.length) {
                     final Path p = dir.resolve(entries[index]);
                     try {
-                        if (filter.accept(p)) {
-                            return true;
-                        }
+                        if (filter.accept(p)) return true;
                     } catch (final IOException ignored) {
                     }
                     index++;
