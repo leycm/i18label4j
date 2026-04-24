@@ -50,10 +50,10 @@ public class SingleFileSource implements LocalizationSource{
                     .filter(Files::isRegularFile)
                     .map(Path::getFileName)
                     .map(Path::toString)
-                    .filter(name -> name.endsWith(parser.getExtension()))
+                    .filter(name -> name.endsWith(parser.getEnding()))
                     .map(name -> name.substring(0, name.length()
-                            - parser.getExtension().length()))
-                    .map(FileParser::filenameToLocale)
+                            - parser.getEnding().length()))
+                    .map(Locales::filenameToLocale)
                     .collect(Collectors.toUnmodifiableSet());
         } catch (IOException e) {
             return Set.of();
@@ -64,8 +64,8 @@ public class SingleFileSource implements LocalizationSource{
     public @Unmodifiable @NonNull Map<String, Localization> getLocalization(
             @NonNull Locale locale
     ) throws Exception {
-        final String tag = FileParser.localeToFilename(locale);
-        final String filename = tag + parser.getExtension();
+        final String tag = Locales.localeToFilename(locale);
+        final String filename = tag + parser.getEnding();
         final Path file = directory.resolve(filename);
         final Map<String, String> parse = parser.parse(file);
 
@@ -82,8 +82,8 @@ public class SingleFileSource implements LocalizationSource{
 
     @Override
     public boolean containsLocalization(@NonNull Locale locale) {
-        final String tag = FileParser.localeToFilename(locale);
-        final String filename = tag + parser.getExtension();
+        final String tag = Locales.localeToFilename(locale);
+        final String filename = tag + parser.getEnding();
         final Path file = directory.resolve(filename);
 
         // note: this check fits better for cases where there are no listing available,
